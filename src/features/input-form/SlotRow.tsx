@@ -8,7 +8,7 @@ import {
 interface SlotRowProps {
   /** 入力済みの項目。未入力の空き枠（ドラフト）の場合はundefined */
   item: TimelineItem | undefined
-  /** このドラフト枠に表示する、前年からの引き継ぎ候補 */
+  /** このドラフト枠に表示する、翌年からの引き継ぎ候補 */
   continuationChips: TimelineItem[]
   onTitleChange: (value: string) => void
   onPickChip: (chip: TimelineItem) => void
@@ -42,7 +42,7 @@ export function SlotRow({
               onClick={() => onPickChip(chip)}
               className="rounded-full border border-[#D8D2E4] bg-white px-2.5 py-1 text-xs text-[#6B6375] transition hover:border-[#BFB4D6] hover:text-[#262230]"
             >
-              前年から：{chip.title}
+              翌年から：{chip.title}
             </button>
           ))}
         </div>
