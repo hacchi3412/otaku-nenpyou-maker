@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Environment variables（今は未使用だが、公開リポジトリでの誤コミット防止のため明示的に除外）
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
