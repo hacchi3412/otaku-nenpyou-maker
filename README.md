@@ -51,6 +51,13 @@ docs/
 
 仕様書のMVP要件（年ごとの入力フォーム、年表プレビュー描画、画像として保存／Xでシェア）は一通り実装済みです。テストコードの整備やデザインの細部の磨き込みは今後の課題です。
 
+## デプロイ
+
+`main`にpushされると、GitHub Actions（`.github/workflows/deploy.yml`）が自動でビルドしてGitHub Pagesにデプロイします。
+
+- 公開URL: https://hacchi3412.github.io/otaku-nenpyou-maker/
+- 初回のみ、リポジトリの Settings → Pages → Build and deployment → Source を **GitHub Actions** に設定してください
+
 ## License
 
 [MIT](./LICENSE)
