@@ -2,29 +2,13 @@ import { useState } from 'react'
 import { Header } from './components/Header'
 import { InputFormPanel } from './features/input-form/InputFormPanel'
 import { PreviewPanel } from './features/preview/PreviewPanel'
-import { useLocalStorage } from './hooks/useLocalStorage'
-import { DEFAULT_YEAR_COUNT, LOCAL_STORAGE_KEY } from './constants/timeline'
-import type { TimelineData } from './types/timeline'
-import { createInitialYears } from './utils/years'
+import { useTimelineData } from './hooks/useTimelineData'
 
 type MobileTab = 'input' | 'preview'
 
-function createInitialData(): TimelineData {
-  return {
-    version: 1,
-    years: createInitialYears(DEFAULT_YEAR_COUNT),
-  }
-}
-
 function App() {
-  const [data, setData] = useLocalStorage<TimelineData>(
-    LOCAL_STORAGE_KEY,
-    createInitialData(),
-  )
+  const { years, updateYearItems, addPastYears } = useTimelineData()
   const [mobileTab, setMobileTab] = useState<MobileTab>('input')
-
-  // 現状はconsumeしていないが、フォーム実装時にsetDataを使って年データを更新する
-  void setData
 
   return (
     <div className="min-h-svh bg-[#FAF8FC]">
@@ -62,12 +46,16 @@ function App() {
           <section
             className={mobileTab === 'input' ? 'block' : 'hidden lg:block'}
           >
-            <InputFormPanel years={data.years} />
+            <InputFormPanel
+              years={years}
+              onChangeYearItems={updateYearItems}
+              onAddPastYears={addPastYears}
+            />
           </section>
           <section
             className={mobileTab === 'preview' ? 'block' : 'hidden lg:block'}
           >
-            <PreviewPanel years={data.years} />
+            <PreviewPanel years={years} />
           </section>
         </div>
       </main>

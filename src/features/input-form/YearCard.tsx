@@ -1,0 +1,95 @@
+import type { TimelineItem } from '../../types/timeline'
+import { MAX_ITEMS_PER_YEAR } from '../../constants/timeline'
+import { pickRandomColor } from '../../utils/color'
+import { SlotRow } from './SlotRow'
+
+interface YearCardProps {
+  year: number
+  items: TimelineItem[]
+  /** 前年（year - 1）の項目。継続入力チップの候補に使う */
+  previousYearItems: TimelineItem[]
+  onChange: (items: TimelineItem[]) => void
+}
+
+/**
+ * 年ごとの入力カード。
+ * 項目は最大3枠（継続項目も同枠でカウント）。空き枠は常に1つだけ表示し、
+ * 入力されると自動で次の空き枠が現れる。
+ */
+export function YearCard({
+  year,
+  items,
+  previousYearItems,
+  onChange,
+}: YearCardProps) {
+  const canAddMore = items.length < MAX_ITEMS_PER_YEAR
+  // ドラフト枠がある間だけ、まだ未入力の前年項目を引き継ぎ候補として出す
+  const continuationChips = canAddMore
+    ? previousYearItems.filter(
+        (prevItem) => !items.some((item) => item.title === prevItem.title),
+      )
+    : []
+
+  const commitNewItem = (title: string, color: string) => {
+    if (!canAddMore) return
+    const trimmed = title.trim()
+    if (!trimmed) return
+    onChange([
+      ...items,
+      { id: crypto.randomUUID(), title: trimmed, comment: '', color },
+    ])
+  }
+
+  const updateItem = (id: string, patch: Partial<TimelineItem>) => {
+    onChange(
+      items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+    )
+  }
+
+  const removeItem = (id: string) => {
+    onChange(items.filter((item) => item.id !== id))
+  }
+
+  // 入力済み項目 + (上限未満なら)ドラフト枠1つ、を並べて表示する
+  const slotCount = canAddMore ? items.length + 1 : items.length
+
+  return (
+    <div className="rounded-2xl border border-[#F0ECF5] bg-white p-4 shadow-sm">
+      <span className="inline-flex items-center rounded-full bg-[#262230] px-3 py-1 text-sm font-semibold text-white">
+        {year}
+      </span>
+
+      <div className="mt-3 flex flex-col gap-3">
+        {Array.from({ length: slotCount }, (_, index) => {
+          const item = items[index]
+          return (
+            <SlotRow
+              key={index}
+              item={item}
+              continuationChips={
+                index === items.length ? continuationChips : []
+              }
+              onTitleChange={(value) => {
+                if (item) {
+                  if (value.trim() === '') {
+                    removeItem(item.id)
+                  } else {
+                    updateItem(item.id, { title: value })
+                  }
+                } else {
+                  commitNewItem(value, pickRandomColor())
+                }
+              }}
+              onPickChip={(chip) => commitNewItem(chip.title, chip.color)}
+              onCommentChange={(value) =>
+                item && updateItem(item.id, { comment: value })
+              }
+              onColorChange={(color) => item && updateItem(item.id, { color })}
+              onDelete={() => item && removeItem(item.id)}
+            />
+          )
+        })}
+      </div>
+    </div>
+  )
+}
