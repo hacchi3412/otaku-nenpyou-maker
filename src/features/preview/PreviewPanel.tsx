@@ -1,6 +1,8 @@
+import { useRef } from 'react'
 import type { YearEntry } from '../../types/timeline'
 import { getVisibleYears } from '../../utils/timelineLayout'
 import { ScaledCanvas } from './ScaledCanvas'
+import { ShareButtons } from './ShareButtons'
 import { TimelineChart } from './TimelineChart'
 import { TimelineDecorations } from './TimelineDecorations'
 
@@ -12,9 +14,10 @@ interface PreviewPanelProps {
 
 /**
  * 年表画像のプレビュー。
- * TODO: 「画像として保存」「Xでシェア」ボタンは別PRで実装する。
  */
 export function PreviewPanel({ years }: PreviewPanelProps) {
+  const exportTargetRef = useRef<HTMLDivElement>(null)
+
   const visibleYears = getVisibleYears(years)
   const rangeLabel =
     visibleYears.length === 0
@@ -26,7 +29,11 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
   return (
     <div className="rounded-2xl border border-[#F0ECF5] bg-[#FBFAFD] p-3 shadow-sm sm:p-4">
       <ScaledCanvas width={CHART_WIDTH}>
-        <div className="relative overflow-hidden bg-white px-6 py-8">
+        {/* このdivがそのまま画像として書き出される対象（幅固定・スケール前の実寸） */}
+        <div
+          ref={exportTargetRef}
+          className="relative overflow-hidden bg-white px-6 py-8"
+        >
           <TimelineDecorations />
 
           <div className="relative flex flex-col items-center">
@@ -49,6 +56,8 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
           </p>
         </div>
       </ScaledCanvas>
+
+      <ShareButtons exportTargetRef={exportTargetRef} />
     </div>
   )
 }
