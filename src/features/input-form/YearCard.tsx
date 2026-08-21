@@ -6,8 +6,12 @@ import { SlotRow } from './SlotRow'
 interface YearCardProps {
   year: number
   items: TimelineItem[]
-  /** 前年（year - 1）の項目。継続入力チップの候補に使う */
-  previousYearItems: TimelineItem[]
+  /**
+   * 翌年（year + 1）の項目。継続入力チップの候補に使う。
+   * 入力フォームは新しい年が上に並ぶため、1つ上のカード＝翌年のデータを参照することで、
+   * 上から順に埋めていく入力順でも常に入力済みの内容を候補にできる。
+   */
+  nextYearItems: TimelineItem[]
   onChange: (items: TimelineItem[]) => void
 }
 
@@ -19,14 +23,14 @@ interface YearCardProps {
 export function YearCard({
   year,
   items,
-  previousYearItems,
+  nextYearItems,
   onChange,
 }: YearCardProps) {
   const canAddMore = items.length < MAX_ITEMS_PER_YEAR
-  // ドラフト枠がある間だけ、まだ未入力の前年項目を引き継ぎ候補として出す
+  // ドラフト枠がある間だけ、まだ未入力の翌年項目を引き継ぎ候補として出す
   const continuationChips = canAddMore
-    ? previousYearItems.filter(
-        (prevItem) => !items.some((item) => item.title === prevItem.title),
+    ? nextYearItems.filter(
+        (nextItem) => !items.some((item) => item.title === nextItem.title),
       )
     : []
 
