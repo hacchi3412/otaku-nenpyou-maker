@@ -1,6 +1,7 @@
 import { useState, type RefObject } from 'react'
 import { DEFAULT_SHARE_TEXT, EXPORT_FILE_NAME } from '../../constants/share'
 import { downloadBlob, exportNodeAsPngBlob } from '../../utils/exportImage'
+import { isIOS } from '../../utils/platform'
 
 interface ShareButtonsProps {
   /** 画像として書き出す対象（幅固定の年表本体）への参照 */
@@ -25,8 +26,22 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
     setMessage(null)
     try {
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
-      downloadBlob(blob, EXPORT_FILE_NAME)
+      const file = new File([blob], EXPORT_FILE_NAME, { type: 'image/png' })
+
+      // iOS SafariはBlobの<a download>を「保存」ではなく「画像を開くだけ」として
+      // 扱ってしまい、そこから長押しで保存する手間が発生する。
+      // ネイティブの共有シート経由なら「イメージを保存」がワンタップで並ぶため、
+      // iOSではこちらを優先する（テキストは付けず、保存だけを促す）
+      if (isIOS() && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] })
+      } else {
+        downloadBlob(blob, EXPORT_FILE_NAME)
+      }
     } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        // 共有シートをユーザーがキャンセルした場合は何もしない
+        return
+      }
       console.error(error)
       setMessage('画像の保存に失敗しました。もう一度お試しください。')
     } finally {
