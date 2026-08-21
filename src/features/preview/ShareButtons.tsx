@@ -1,6 +1,10 @@
 import { useState, type RefObject } from 'react'
 import { DEFAULT_SHARE_TEXT, EXPORT_FILE_NAME } from '../../constants/share'
-import { downloadBlob, exportNodeAsPngBlob } from '../../utils/exportImage'
+import {
+  copyImageToClipboard,
+  downloadBlob,
+  exportNodeAsPngBlob,
+} from '../../utils/exportImage'
 import { isIOS } from '../../utils/platform'
 
 interface ShareButtonsProps {
@@ -12,9 +16,10 @@ type Status = 'idle' | 'saving' | 'sharing'
 
 /**
  * 「画像として保存」「Xでシェア」ボタン。
- * サーバーを使わず完結させるため、Xへの共有は
- * Web Share API（画像添付に対応）があればそれを使い、
- * 無ければ画像をダウンロードした上でXの投稿画面を新規タブで開く。
+ * サーバーを使わず完結させるため、
+ * - 保存: iOSでは共有シート（画像保存がワンタップで並ぶ）、それ以外は直接ダウンロード
+ * - Xでシェア: 常にXの投稿画面（テキスト入力済み）を新規タブで開く。
+ *   画像はクリップボードへのコピーを試み、失敗時はダウンロードにフォールバックする
  */
 export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
   const [status, setStatus] = useState<Status>('idle')
@@ -53,27 +58,38 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
     if (!exportTargetRef.current) return
     setStatus('sharing')
     setMessage(null)
+
+    // Xの投稿作成画面（テキスト入力済み）を確実に開くのが最優先。
+    // OSの汎用共有シート（Web Share API）経由だと、Xを選ぶ一手間が増える上、
+    // 投稿画面に直接テキストが入るとは限らないため、常にX公式のintent URLを使う。
+    //
+    // 画像のエクスポート処理を挟んでからwindow.open()すると、iOS Safariなどでは
+    // ユーザー操作から時間が経ちすぎてポップアップとしてブロックされることがあるため、
+    // 先に空のタブを開いておき、あとから遷移先を差し替える。
+    const composeWindow = window.open('', '_blank')
+
     try {
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
-      const file = new File([blob], EXPORT_FILE_NAME, { type: 'image/png' })
-
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text: DEFAULT_SHARE_TEXT })
-      } else {
-        // 画像添付付きの共有に対応していない環境向けのフォールバック：
-        // 画像を保存しつつ、Xの投稿画面をテキスト付きで開く
+      const imageCopied = await copyImageToClipboard(blob)
+      if (!imageCopied) {
         downloadBlob(blob, EXPORT_FILE_NAME)
-        const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}`
+      }
+
+      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}`
+      if (composeWindow) {
+        composeWindow.location.href = intentUrl
+      } else {
+        // ポップアップブロックなどで先に開けなかった場合のフォールバック
         window.open(intentUrl, '_blank', 'noopener,noreferrer')
-        setMessage(
-          '画像を保存しました。投稿画面が開くので、保存した画像を貼り付けてください。',
-        )
       }
+
+      setMessage(
+        imageCopied
+          ? '投稿画面を開きました。画像を貼り付けてから投稿してください。'
+          : '投稿画面を開きました。保存した画像を添付してから投稿してください。',
+      )
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        // シェアシートをユーザーがキャンセルした場合は何もしない
-        return
-      }
+      composeWindow?.close()
       console.error(error)
       setMessage('シェアに失敗しました。もう一度お試しください。')
     } finally {
