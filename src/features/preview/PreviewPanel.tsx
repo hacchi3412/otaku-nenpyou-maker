@@ -4,7 +4,6 @@ import { getVisibleYears } from '../../utils/timelineLayout'
 import { ScaledCanvas } from './ScaledCanvas'
 import { ShareButtons } from './ShareButtons'
 import { TimelineChart } from './TimelineChart'
-import { TimelineDecorations } from './TimelineDecorations'
 
 const CHART_WIDTH = 600
 
@@ -14,8 +13,11 @@ interface PreviewPanelProps {
 
 /**
  * 年表画像のプレビュー。
- * カード自体（枠線・角丸・影）も含めて画像として書き出す対象なので、
+ * カード自体（枠線・角丸）も含めて画像として書き出す対象なので、
  * それらのスタイルはexportTargetRefのdivに直接持たせている。
+ *
+ * 装飾は引き算方針: 角丸は最小限、影はほぼ使わない、グラデーションなし、
+ * 枠線は本当に必要な箇所だけに絞っている。
  */
 export function PreviewPanel({ years }: PreviewPanelProps) {
   const exportTargetRef = useRef<HTMLDivElement>(null)
@@ -33,36 +35,31 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
       <ScaledCanvas width={CHART_WIDTH}>
         <div
           ref={exportTargetRef}
-          className="relative overflow-hidden rounded-[24px] px-7 pt-[30px] pb-[26px]"
+          className="relative overflow-hidden rounded-[4px] px-7 pt-[30px] pb-[26px]"
           style={{
             backgroundColor: '#FFFDFB',
-            // box-shadow（ぼかしあり）はiOS Safari上のhtml-to-image書き出しで
-            // ぼけずに硬い矩形として描画されてしまう既知の相性問題があるため使わない
-            border: '2px solid #E4DEF0',
+            border: '1px solid #E4DEF0',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
           }}
         >
-          <TimelineDecorations />
-
-          <div className="relative mb-5 flex items-center justify-between gap-2">
+          <div className="mb-5 flex items-center justify-between gap-2">
             <h2 className="font-maru text-[22px] font-black whitespace-nowrap text-[#4A4560]">
               わたしの<span className="text-[#E8899F]">オタク年表</span>
             </h2>
             {rangeLabel && (
               <span
-                className="font-kaku flex-shrink-0 rounded-full px-[11px] py-1 text-xs font-bold whitespace-nowrap text-[#C15D78]"
-                style={{ background: '#FCF0F3', border: '1.5px solid #F5D6DF' }}
+                className="font-kaku flex-shrink-0 rounded-[3px] px-[10px] py-1 text-xs font-bold whitespace-nowrap text-[#C15D78]"
+                style={{ border: '1px solid #F0C3D0' }}
               >
                 {rangeLabel}
               </span>
             )}
           </div>
 
-          <div className="relative">
-            <TimelineChart years={years} />
-          </div>
+          <TimelineChart years={years} />
 
           <div
-            className="relative mt-4 flex justify-end pt-[14px]"
+            className="mt-4 flex justify-end pt-[14px]"
             style={{ borderTop: '1px solid #E4DEF0' }}
           >
             <p className="font-kaku text-[10.5px] text-[#A79FC2]">
