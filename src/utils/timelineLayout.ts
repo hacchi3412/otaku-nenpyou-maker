@@ -90,17 +90,18 @@ export function computeLaneSegments(visibleYears: YearEntry[]): LaneSegment[] {
 }
 
 /** 年表カードのレイアウト定数（PreviewPanel・TimelineChartで共通利用） */
-export const AXIS_WIDTH = 32
-/** レーン1つあたりの横幅（px）。MAX_ITEMS_PER_YEAR=3レーン使用時に旧固定幅600pxと一致する値 */
+/** 年の目盛り欄の横幅。年を4桁フルで表示するため、下2桁略記だった頃より広めに取っている */
+export const AXIS_WIDTH = 44
+/** レーン1つあたりの横幅（px） */
 export const LANE_WIDTH = 482 / 3
 export const LANE_GAP = 10
 /** カードの左右パディング合計（px-7 = 28px × 2） */
 const CARD_PADDING_X = 56
 /**
- * レーン数が少ないときに見出し・フッターが窮屈にならないための最小幅。
- * 「わたしのオタク年表」見出し＋年範囲バッジが1行に収まる幅を目安にしている。
+ * レーン数が少ないときに見出しが窮屈にならないための最小幅。
+ * 「わたしのオタク年表」見出しが1行に収まる幅を目安にしている。
  */
-const MIN_CHART_WIDTH = 380
+const MIN_CHART_WIDTH = 300
 
 /**
  * 実際に使われているレーン数（1〜MAX_ITEMS_PER_YEAR）を返す。
