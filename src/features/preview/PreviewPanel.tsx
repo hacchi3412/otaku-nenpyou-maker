@@ -1,11 +1,14 @@
 import { useRef } from 'react'
 import type { YearEntry } from '../../types/timeline'
-import { getVisibleYears } from '../../utils/timelineLayout'
+import {
+  computeLaneSegments,
+  getChartWidth,
+  getUsedLaneCount,
+  getVisibleYears,
+} from '../../utils/timelineLayout'
 import { ScaledCanvas } from './ScaledCanvas'
 import { ShareButtons } from './ShareButtons'
 import { TimelineChart } from './TimelineChart'
-
-const CHART_WIDTH = 600
 
 interface PreviewPanelProps {
   years: YearEntry[]
@@ -18,11 +21,16 @@ interface PreviewPanelProps {
  *
  * 装飾は引き算方針: 角丸は最小限、影はほぼ使わない、グラデーションなし、
  * 枠線は本当に必要な箇所だけに絞っている。
+ *
+ * カード全体の横幅は、実際に使われているレーン数（1〜3）に応じて可変にする。
+ * ブロック列が少ないときに右側へ余分な余白ができないようにするため。
  */
 export function PreviewPanel({ years }: PreviewPanelProps) {
   const exportTargetRef = useRef<HTMLDivElement>(null)
 
   const visibleYears = getVisibleYears(years)
+  const laneCount = getUsedLaneCount(computeLaneSegments(visibleYears))
+  const chartWidth = getChartWidth(laneCount)
   const rangeLabel =
     visibleYears.length === 0
       ? ''
@@ -32,7 +40,7 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
 
   return (
     <div>
-      <ScaledCanvas width={CHART_WIDTH}>
+      <ScaledCanvas width={chartWidth}>
         <div
           ref={exportTargetRef}
           className="relative overflow-hidden rounded-[4px] px-7 pt-[30px] pb-[26px]"
@@ -56,7 +64,7 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
             )}
           </div>
 
-          <TimelineChart years={years} />
+          <TimelineChart years={years} laneCount={laneCount} />
 
           <div
             className="mt-4 flex justify-end pt-[14px]"
