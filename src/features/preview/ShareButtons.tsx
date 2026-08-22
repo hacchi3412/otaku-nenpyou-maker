@@ -18,8 +18,8 @@ type Status = 'idle' | 'saving' | 'sharing'
  * 「画像として保存」「Xでシェア」ボタン。
  * サーバーを使わず完結させるため、
  * - 保存: iOSでは共有シート（画像保存がワンタップで並ぶ）、それ以外は直接ダウンロード
- * - Xでシェア: 常にXの投稿画面（テキスト入力済み）を新規タブで開く。
- *   画像は自動ダウンロードし、投稿欄への添付は手動で案内する
+ * - Xでシェア: 画像を先にダウンロードしてから、Xの投稿画面（テキスト入力済み）を
+ *   新規タブで開く。投稿欄への添付は手動で案内する
  *   （クリップボード経由の自動貼り付けは試みない。詳細は7章参照）
  */
 export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
@@ -81,36 +81,34 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
     setStatus('sharing')
     setMessage(null)
 
-    // Xの投稿作成画面（テキスト入力済み）を確実に開くのが最優先。
-    // OSの汎用共有シート（Web Share API）経由だと、Xを選ぶ一手間が増える上、
-    // 投稿画面に直接テキストが入るとは限らないため、常にX公式のintent URLを使う。
+    // 画像のダウンロードを終えてから投稿画面を開く順序にしている。
+    // スマホでXのintent URLへ遷移すると、多くの場合ネイティブのXアプリへ
+    // 丸ごと切り替わる（ブラウザがバックグラウンドになる）。この切り替えが
+    // ダウンロードより先に起きると、ダウンロード確認のダイアログ等が
+    // ユーザーの目に入らないまま放置され、画像が結局保存されずに終わって
+    // しまう（実際に報告された不具合）。ダウンロードは先に確実に済ませる。
     //
-    // 画像はクリップボード経由での自動貼り付けを試みず、常にダウンロードして
-    // 手動添付を案内する方針にした。理由：
-    // - クリップボードコピー（navigator.clipboard.write）はドキュメントが
-    //   フォーカスを失うと失敗する仕様があり、スマホでXのintent URLへ遷移すると
-    //   多くの場合ネイティブのXアプリへ丸ごと切り替わってフォーカスを失うため、
-    //   常に失敗してしまう
-    // - フォーカスを保つには投稿画面への遷移をコピーの後に遅らせる必要があるが、
-    //   そうすると今度はexportに時間がかかった場合に「ユーザー操作からの経過時間」
-    //   判定でその遷移自体がポップアップブロックされることがあった
-    // 両立できないため、ダウンロード方式に一本化した。ダウンロードは
-    // ドキュメントのフォーカス状態に依存しないため、投稿画面をユーザー操作
-    // 直後に確定URLで直接開いても問題ない（詳細は7章参照）。
-    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}&url=${encodeURIComponent(SITE_URL)}`
-    window.open(intentUrl, '_blank', 'noopener,noreferrer')
-
+    // トレードオフ：window.open()をユーザー操作から時間を置いて呼ぶことになる
+    // ため、エクスポートに時間がかかった場合はまれに投稿画面がポップアップ
+    // ブロックに引っかかることがありうる（詳細は7章参照）。ただしこの場合でも
+    // 画像は既に保存済みなので、ユーザーは手動でXを開いて添付すればよく、
+    // 「画像が保存されないまま投稿画面だけ開く」場合より実害は小さいと判断した。
     try {
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
       downloadBlob(blob, EXPORT_FILE_NAME)
+
+      // Xの投稿作成画面（テキスト入力済み）を開く。OSの汎用共有シート
+      // （Web Share API）経由だと、Xを選ぶ一手間が増える上、投稿画面に
+      // 直接テキストが入るとは限らないため、常にX公式のintent URLを使う。
+      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}&url=${encodeURIComponent(SITE_URL)}`
+      window.open(intentUrl, '_blank', 'noopener,noreferrer')
+
       setMessage(
-        '投稿画面を開きました。保存した画像を投稿欄に添付してください。',
+        '画像をダウンロードしました。投稿画面を開いたので、投稿欄に添付してください。',
       )
     } catch (error) {
       console.error(error)
-      setMessage(
-        '投稿画面は開きましたが、画像の保存に失敗しました。もう一度お試しください。',
-      )
+      setMessage('画像の保存に失敗しました。もう一度お試しください。')
     } finally {
       setStatus('idle')
     }
@@ -139,14 +137,14 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
         </button>
       </div>
       {/*
-        「Xでシェア」は投稿画面を開くのと同時に画像をダウンロードするだけで、
+        「Xでシェア」は画像をダウンロードしてから投稿画面を開くだけで、
         投稿欄への添付は自動化されない。初見だと気づきにくいため、
         クリックする前から常にヒントを出しておく。
         シェア操作直後は、結果に応じた具体的なメッセージに差し替える。
       */}
       <p className="max-w-xs text-center text-xs text-[#8D869B]">
         {message ??
-          '「Xでシェア」は投稿画面が開き、画像がダウンロードされます。投稿欄に添付してください'}
+          '「Xでシェア」は画像がダウンロードされ、投稿画面が開きます。投稿欄に添付してください'}
       </p>
     </div>
   )

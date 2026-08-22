@@ -15,6 +15,40 @@
       name="description"
       content="自分がハマってきた作品やアイドル、趣味を年別に入力して、1枚の年表画像を生成できるWebアプリ。SNSでシェアしよう。"
     />
+
+    <!--
+      OGP / Twitter Card。SNSでURLをシェアした際にリンクカードとして表示されるための
+      メタタグ。og:image・twitter:imageはクローラーがページのbaseとは無関係に直接
+      フェッチするため、Viteのbaseリライトに頼らず絶対URLで指定する必要がある。
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:title" content="オタク年表メーカー" />
+    <meta
+      property="og:description"
+      content="自分がハマってきた作品やアイドル、趣味を年別に入力して、1枚の年表画像を生成できるWebアプリ。SNSでシェアしよう。"
+    />
+    <meta
+      property="og:url"
+      content="https://hacchi3412.github.io/otaku-nenpyou-maker/"
+    />
+    <meta
+      property="og:image"
+      content="https://hacchi3412.github.io/otaku-nenpyou-maker/ogp.png"
+    />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="オタク年表メーカー" />
+    <meta
+      name="twitter:description"
+      content="自分がハマってきた作品やアイドル、趣味を年別に入力して、1枚の年表画像を生成できるWebアプリ。SNSでシェアしよう。"
+    />
+    <meta
+      name="twitter:image"
+      content="https://hacchi3412.github.io/otaku-nenpyou-maker/ogp.png"
+    />
+
     <title>オタク年表メーカー</title>
   </head>
   <body>
