@@ -84,10 +84,17 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
     // OSの汎用共有シート（Web Share API）経由だと、Xを選ぶ一手間が増える上、
     // 投稿画面に直接テキストが入るとは限らないため、常にX公式のintent URLを使う。
     //
-    // 画像のエクスポート処理を挟んでからwindow.open()すると、iOS Safariなどでは
-    // ユーザー操作から時間が経ちすぎてポップアップとしてブロックされることがあるため、
-    // 先に空のタブを開いておき、あとから遷移先を差し替える。
-    const composeWindow = window.open('', '_blank')
+    // ツイート本文は固定文言で、画像のエクスポート結果に依存しないため、
+    // exportやクリップボードコピーを待たずにここで直接開く。
+    // 以前は先に空のタブ（window.open('', '_blank')）を開いておき、export完了後に
+    // location.hrefで遷移先を差し替える実装だったが、export＋クリップボードコピーに
+    // 時間がかかると「ユーザー操作からの経過時間」判定でその遷移がポップアップブロック
+    // される事例があった（特にSafari）。1〜2回に1回、投稿画面が about:blank のまま
+    // 開かず、もう一度押すと開くという不具合の原因はこれ。
+    // URLを確定した状態でwindow.open()自体をクリックハンドラの同期実行区間
+    // （＝最初のawaitより前）で呼べば、この遅延ブロックは発生しない。
+    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}`
+    window.open(intentUrl, '_blank', 'noopener,noreferrer')
 
     try {
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
@@ -96,23 +103,16 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
         downloadBlob(blob, EXPORT_FILE_NAME)
       }
 
-      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}`
-      if (composeWindow) {
-        composeWindow.location.href = intentUrl
-      } else {
-        // ポップアップブロックなどで先に開けなかった場合のフォールバック
-        window.open(intentUrl, '_blank', 'noopener,noreferrer')
-      }
-
       setMessage(
         imageCopied
           ? '投稿画面を開きました。画像を貼り付けてから投稿してください。'
           : '投稿画面を開きました。保存した画像を添付してから投稿してください。',
       )
     } catch (error) {
-      composeWindow?.close()
       console.error(error)
-      setMessage('シェアに失敗しました。もう一度お試しください。')
+      setMessage(
+        '投稿画面は開きましたが、画像の準備に失敗しました。もう一度お試しください。',
+      )
     } finally {
       setStatus('idle')
     }
