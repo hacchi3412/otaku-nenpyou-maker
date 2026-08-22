@@ -36,8 +36,9 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
           className="relative overflow-hidden rounded-[24px] px-7 pt-[30px] pb-[26px]"
           style={{
             backgroundColor: '#FFFDFB',
+            // box-shadow（ぼかしあり）はiOS Safari上のhtml-to-image書き出しで
+            // ぼけずに硬い矩形として描画されてしまう既知の相性問題があるため使わない
             border: '2px solid #E4DEF0',
-            boxShadow: '0 20px 50px -20px rgba(74,69,96,0.28)',
           }}
         >
           <TimelineDecorations />
