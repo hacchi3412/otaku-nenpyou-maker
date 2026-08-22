@@ -8,5 +8,11 @@ export const EXPORT_FILE_NAME = 'オタク年表.png'
  */
 export const DEFAULT_SHARE_TEXT = 'わたしのオタク年表 #オタク年表メーカー'
 
+/**
+ * サービスの公開URL。Xシェア時にintent URLの`url`パラメータへ渡し、
+ * 投稿からアプリへ辿れるようにする（拡散導線）。
+ */
+export const SITE_URL = 'https://hacchi3412.github.io/otaku-nenpyou-maker/'
+
 /** 画像化する際の解像度倍率（SNS共有でも潰れないよう高解像度で書き出す） */
 export const EXPORT_PIXEL_RATIO = 2

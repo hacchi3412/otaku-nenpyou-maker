@@ -1,10 +1,10 @@
 import { useState, type RefObject } from 'react'
-import { DEFAULT_SHARE_TEXT, EXPORT_FILE_NAME } from '../../constants/share'
 import {
-  copyImageToClipboard,
-  downloadBlob,
-  exportNodeAsPngBlob,
-} from '../../utils/exportImage'
+  DEFAULT_SHARE_TEXT,
+  EXPORT_FILE_NAME,
+  SITE_URL,
+} from '../../constants/share'
+import { downloadBlob, exportNodeAsPngBlob } from '../../utils/exportImage'
 import { isIOS } from '../../utils/platform'
 
 interface ShareButtonsProps {
@@ -19,7 +19,8 @@ type Status = 'idle' | 'saving' | 'sharing'
  * サーバーを使わず完結させるため、
  * - 保存: iOSでは共有シート（画像保存がワンタップで並ぶ）、それ以外は直接ダウンロード
  * - Xでシェア: 常にXの投稿画面（テキスト入力済み）を新規タブで開く。
- *   画像はクリップボードへのコピーを試み、失敗時はダウンロードにフォールバックする
+ *   画像は自動ダウンロードし、投稿欄への添付は手動で案内する
+ *   （クリップボード経由の自動貼り付けは試みない。詳細は7章参照）
  */
 export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
   const [status, setStatus] = useState<Status>('idle')
@@ -84,47 +85,32 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
     // OSの汎用共有シート（Web Share API）経由だと、Xを選ぶ一手間が増える上、
     // 投稿画面に直接テキストが入るとは限らないため、常にX公式のintent URLを使う。
     //
-    // クリップボードへの画像コピー（navigator.clipboard.write）は、
-    // ドキュメントがフォーカスを失うと「Document is not focused」で失敗する
-    // 仕様がある。スマホでXのintent URLへ直接遷移すると、多くの場合ネイティブの
-    // X アプリへ丸ごと切り替わってしまい（ブラウザごとバックグラウンドになる）、
-    // その後に行うクリップボードコピーが確実に失敗してしまう。
-    // そのため、先に空のタブ（about:blank、まだ実URLへ遷移していない状態）だけ
-    // 開いておき、エクスポート＋クリップボードコピーを終えてから最後に実URLへ
-    // 遷移させる。これによりコピーの間はこのページがフォーカスを保てる。
-    //
-    // window.open('', '_blank')自体はクリックハンドラの同期実行区間
-    // （＝最初のawaitより前）で呼んでおり、ポップアップブロックの対象にはならない。
-    // ただし、この空タブへの遷移（location.href）をexport完了後に行うため、
-    // exportに時間がかかる場合はまれにその遷移がブラウザのポップアップブロックに
-    // 引っかかることがある（詳細は7章参照）。クリップボードコピーが確実に壊れる
-    // 問題の方が影響が大きいと判断し、こちらを優先した。
-    const composeWindow = window.open('', '_blank')
+    // 画像はクリップボード経由での自動貼り付けを試みず、常にダウンロードして
+    // 手動添付を案内する方針にした。理由：
+    // - クリップボードコピー（navigator.clipboard.write）はドキュメントが
+    //   フォーカスを失うと失敗する仕様があり、スマホでXのintent URLへ遷移すると
+    //   多くの場合ネイティブのXアプリへ丸ごと切り替わってフォーカスを失うため、
+    //   常に失敗してしまう
+    // - フォーカスを保つには投稿画面への遷移をコピーの後に遅らせる必要があるが、
+    //   そうすると今度はexportに時間がかかった場合に「ユーザー操作からの経過時間」
+    //   判定でその遷移自体がポップアップブロックされることがあった
+    // 両立できないため、ダウンロード方式に一本化した。ダウンロードは
+    // ドキュメントのフォーカス状態に依存しないため、投稿画面をユーザー操作
+    // 直後に確定URLで直接開いても問題ない（詳細は7章参照）。
+    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}&url=${encodeURIComponent(SITE_URL)}`
+    window.open(intentUrl, '_blank', 'noopener,noreferrer')
 
     try {
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
-      const imageCopied = await copyImageToClipboard(blob)
-      if (!imageCopied) {
-        downloadBlob(blob, EXPORT_FILE_NAME)
-      }
-
-      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}`
-      if (composeWindow) {
-        composeWindow.location.href = intentUrl
-      } else {
-        // ポップアップブロックなどで先に開けなかった場合のフォールバック
-        window.open(intentUrl, '_blank', 'noopener,noreferrer')
-      }
-
+      downloadBlob(blob, EXPORT_FILE_NAME)
       setMessage(
-        imageCopied
-          ? '投稿画面を開きました。画像を貼り付けてから投稿してください。'
-          : '投稿画面を開きました。保存した画像を添付してから投稿してください。',
+        '投稿画面を開きました。保存した画像を投稿欄に添付してください。',
       )
     } catch (error) {
-      composeWindow?.close()
       console.error(error)
-      setMessage('シェアに失敗しました。もう一度お試しください。')
+      setMessage(
+        '投稿画面は開きましたが、画像の保存に失敗しました。もう一度お試しください。',
+      )
     } finally {
       setStatus('idle')
     }
@@ -153,14 +139,14 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
         </button>
       </div>
       {/*
-        「Xでシェア」は投稿画面を開くだけで、画像は自動添付されない
-        （クリップボードへのコピーを試みるが、貼り付けは手動）。
-        初見だと気づきにくいため、クリックする前から常にヒントを出しておく。
+        「Xでシェア」は投稿画面を開くのと同時に画像をダウンロードするだけで、
+        投稿欄への添付は自動化されない。初見だと気づきにくいため、
+        クリックする前から常にヒントを出しておく。
         シェア操作直後は、結果に応じた具体的なメッセージに差し替える。
       */}
       <p className="max-w-xs text-center text-xs text-[#8D869B]">
         {message ??
-          '「Xでシェア」は投稿画面が開きます。画像は投稿欄に貼り付けてください'}
+          '「Xでシェア」は投稿画面が開き、画像がダウンロードされます。投稿欄に添付してください'}
       </p>
     </div>
   )
