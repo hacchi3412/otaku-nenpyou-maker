@@ -1,12 +1,18 @@
 import type { YearEntry } from '../../types/timeline'
 import { MAX_ITEMS_PER_YEAR } from '../../constants/timeline'
+import { getSwatchTextColor } from '../../utils/color'
 import {
   computeLaneSegments,
   getVisibleYears,
 } from '../../utils/timelineLayout'
 
-const AXIS_WIDTH = 52
-const MIN_ROW_HEIGHT = 68
+const AXIS_WIDTH = 32
+const MIN_ROW_HEIGHT = 58
+
+/** 年の目盛りは脇役として、下2桁＋アポストロフィの略記にする（例: 2026 → '26） */
+function formatYearAbbrev(year: number): string {
+  return `'${String(year).slice(-2)}`
+}
 
 interface TimelineChartProps {
   years: YearEntry[]
@@ -23,7 +29,7 @@ export function TimelineChart({ years }: TimelineChartProps) {
   if (visibleYears.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-1 py-16 text-center">
-        <p className="text-sm text-[#9089A0]">
+        <p className="font-kaku text-sm text-[#A79FC2]">
           年ごとに作品やコメントを入力すると
           <br />
           ここに年表が表示されます
@@ -36,21 +42,46 @@ export function TimelineChart({ years }: TimelineChartProps) {
 
   return (
     <div
-      className="grid gap-x-2 gap-y-2"
+      className="grid gap-x-[10px] gap-y-0"
       style={{
         gridTemplateColumns: `${AXIS_WIDTH}px repeat(${MAX_ITEMS_PER_YEAR}, 1fr)`,
         gridTemplateRows: `repeat(${visibleYears.length}, minmax(${MIN_ROW_HEIGHT}px, auto))`,
       }}
     >
+      {/* 年軸を貫く縦の点線（サブウェイマップの本線のような表現） */}
+      <div
+        aria-hidden
+        className="rounded-full"
+        style={{
+          gridColumn: 1,
+          gridRow: `1 / ${visibleYears.length + 1}`,
+          marginTop: 4,
+          marginBottom: 4,
+          marginLeft: 5,
+          width: 2,
+          background:
+            'repeating-linear-gradient(to bottom, #A79FC2 0 4px, transparent 4px 9px)',
+        }}
+      />
+
       {visibleYears.map((entry, index) => (
         <div
           key={entry.year}
-          className="flex items-start gap-1.5 pt-1"
-          style={{ gridColumn: 1, gridRow: index + 1 }}
+          className="relative flex items-start"
+          style={{ gridColumn: 1, gridRow: index + 1, paddingTop: 2 }}
         >
-          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#C7BFDA]" />
-          <span className="text-[11px] font-medium text-[#B0A8C2]">
-            {entry.year}
+          <span
+            className="absolute rounded-full bg-white"
+            style={{
+              left: 1.5,
+              top: 2,
+              width: 7,
+              height: 7,
+              border: '2px solid #C9C2DE',
+            }}
+          />
+          <span className="font-maru ml-4 text-[10px] font-bold text-[#A79FC2]">
+            {formatYearAbbrev(entry.year)}
           </span>
         </div>
       ))}
@@ -58,19 +89,22 @@ export function TimelineChart({ years }: TimelineChartProps) {
       {segments.map((segment) => (
         <div
           key={`${segment.lane}-${segment.startIndex}-${segment.item.id}`}
-          className="flex flex-col items-start justify-start overflow-hidden rounded-2xl border px-3 py-2 shadow-[0_2px_6px_rgba(80,60,100,0.08)]"
+          className="flex flex-col items-start gap-[3px] overflow-hidden rounded-2xl px-3 py-2"
           style={{
             gridColumn: segment.lane + 2,
             gridRow: `${segment.startIndex + 1} / span ${segment.length}`,
+            margin: '6px 0 4px',
             backgroundColor: segment.item.color,
-            borderColor: 'rgba(0,0,0,0.06)',
+            color: getSwatchTextColor(segment.item.color),
+            border: '1.75px solid rgba(74,69,96,0.14)',
+            boxShadow: '0 4px 10px -4px rgba(74,69,96,0.22)',
           }}
         >
-          <p className="w-full text-left text-sm leading-snug font-bold break-words text-[#2B2735]">
+          <p className="font-maru w-full text-left text-[13px] leading-[1.3] font-extrabold break-words">
             {segment.item.title}
           </p>
           {segment.item.comment && (
-            <p className="mt-0.5 w-full text-left text-[11px] leading-snug break-words text-[#2B2735]/60">
+            <p className="font-kaku w-full text-left text-[10.5px] leading-[1.3] font-semibold break-words opacity-[0.68]">
               {segment.item.comment}
             </p>
           )}

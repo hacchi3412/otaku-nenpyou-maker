@@ -13,17 +13,23 @@ export const DEFAULT_YEAR_COUNT = 10
 /** 「＋もっと過去の年を追加する」で一度に追加する年数 */
 export const ADD_PAST_YEARS_STEP = 5
 
+/** ブロックのパステルカラー・スウォッチ1件（背景色と、それに合う濃いめの同系色の文字色のペア） */
+export interface SwatchColor {
+  bg: string
+  text: string
+}
+
 /**
  * ブロックのパステルカラー・スウォッチ。
  * 未指定時のランダム割り当てにも、手動選択にもこの配列を使う。
+ * textは背景に対して可読性を保ちつつ主張を抑えられるよう、同系統の濃い色にしている。
  */
-export const SWATCH_COLORS = [
-  '#FDE7EF', // パステルピンク
-  '#FFF3D6', // パステルイエロー
-  '#E4F3D9', // パステルグリーン
-  '#D9F0EF', // パステルミント
-  '#DCEBFA', // パステルブルー
-  '#EAE1F7', // パステルパープル
+export const SWATCH_COLORS: readonly SwatchColor[] = [
+  { bg: '#FFD4DC', text: '#B4536B' }, // ピンク
+  { bg: '#FFEBBE', text: '#A6791E' }, // イエロー
+  { bg: '#CBF3E6', text: '#2E8C74' }, // ミント
+  { bg: '#E1D9FA', text: '#6B58B8' }, // パープル
+  { bg: '#D3ECFC', text: '#3D7DAD' }, // ブルー
 ] as const
 
 export const LOCAL_STORAGE_KEY = 'otaku-nenpyou-maker:data'
