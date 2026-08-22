@@ -1,4 +1,4 @@
-import type { TimelineItem } from '../../types/timeline'
+import type { ContinuationChip, TimelineItem } from '../../types/timeline'
 import { MAX_ITEMS_PER_YEAR } from '../../constants/timeline'
 import { pickRandomColor } from '../../utils/color'
 import { SlotRow } from './SlotRow'
@@ -6,6 +6,11 @@ import { SlotRow } from './SlotRow'
 interface YearCardProps {
   year: number
   items: TimelineItem[]
+  /**
+   * 前年（year - 1）の項目。継続入力チップの候補に使う。
+   * 下から（古い年から）順に埋めていく場合、こちらが参照先になる。
+   */
+  previousYearItems: TimelineItem[]
   /**
    * 翌年（year + 1）の項目。継続入力チップの候補に使う。
    * 入力フォームは新しい年が上に並ぶため、1つ上のカード＝翌年のデータを参照することで、
@@ -23,15 +28,23 @@ interface YearCardProps {
 export function YearCard({
   year,
   items,
+  previousYearItems,
   nextYearItems,
   onChange,
 }: YearCardProps) {
   const canAddMore = items.length < MAX_ITEMS_PER_YEAR
-  // ドラフト枠がある間だけ、まだ未入力の翌年項目を引き継ぎ候補として出す
-  const continuationChips = canAddMore
-    ? nextYearItems.filter(
-        (nextItem) => !items.some((item) => item.title === nextItem.title),
-      )
+
+  // ドラフト枠がある間だけ、まだ未入力の前年・翌年項目を引き継ぎ候補として出す。
+  // 上から新しい年順に埋める人・下から古い年順に埋める人の両方に対応するため、双方向に出す。
+  const continuationChips: ContinuationChip[] = canAddMore
+    ? [
+        ...previousYearItems
+          .filter((prevItem) => !items.some((i) => i.title === prevItem.title))
+          .map((item): ContinuationChip => ({ item, source: 'previous' })),
+        ...nextYearItems
+          .filter((nextItem) => !items.some((i) => i.title === nextItem.title))
+          .map((item): ContinuationChip => ({ item, source: 'next' })),
+      ]
     : []
 
   const commitNewItem = (title: string, color: string) => {
