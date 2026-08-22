@@ -1,4 +1,4 @@
-import type { TimelineItem } from '../../types/timeline'
+import type { ContinuationChip, TimelineItem } from '../../types/timeline'
 import {
   COMMENT_MAX_LENGTH,
   SWATCH_COLORS,
@@ -8,8 +8,8 @@ import {
 interface SlotRowProps {
   /** 入力済みの項目。未入力の空き枠（ドラフト）の場合はundefined */
   item: TimelineItem | undefined
-  /** このドラフト枠に表示する、翌年からの引き継ぎ候補 */
-  continuationChips: TimelineItem[]
+  /** このドラフト枠に表示する、前年・翌年からの引き継ぎ候補 */
+  continuationChips: ContinuationChip[]
   onTitleChange: (value: string) => void
   onPickChip: (chip: TimelineItem) => void
   onCommentChange: (value: string) => void
@@ -19,7 +19,7 @@ interface SlotRowProps {
 
 /**
  * 1項目分の入力欄。
- * itemが未定義の間は作品名入力のみのドラフト枠として表示し、
+ * itemが未定義の間はジャンル名入力のみのドラフト枠として表示し、
  * 入力が始まるとコメント・カラー・削除ボタンが現れる。
  */
 export function SlotRow({
@@ -35,14 +35,14 @@ export function SlotRow({
     <div className="rounded-xl border border-[#F0ECF5] bg-[#FAF8FC] p-3">
       {continuationChips.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1.5">
-          {continuationChips.map((chip) => (
+          {continuationChips.map(({ item: chip, source }) => (
             <button
-              key={chip.id}
+              key={`${source}-${chip.id}`}
               type="button"
               onClick={() => onPickChip(chip)}
               className="rounded-full border border-[#D8D2E4] bg-white px-2.5 py-1 text-xs text-[#6B6375] transition hover:border-[#BFB4D6] hover:text-[#262230]"
             >
-              翌年から：{chip.title}
+              {source === 'previous' ? '昨年から' : '翌年から'}：{chip.title}
             </button>
           ))}
         </div>
@@ -53,7 +53,7 @@ export function SlotRow({
         value={item?.title ?? ''}
         onChange={(e) => onTitleChange(e.target.value)}
         maxLength={TITLE_MAX_LENGTH}
-        placeholder="作品名を入力（15文字まで）"
+        placeholder="ジャンル名を入力（15文字まで）"
         className="w-full rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
       />
 

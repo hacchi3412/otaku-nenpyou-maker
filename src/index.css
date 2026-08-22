@@ -4,7 +4,7 @@
   --font-sans:
     'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic',
     system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  /* 年表画像（プレビュー・書き出し画像）専用のフォント。見出し・年数・作品名まわりに使う丸ゴシック */
+  /* 年表画像（プレビュー・書き出し画像）専用のフォント。見出し・年数・ジャンル名まわりに使う丸ゴシック */
   --font-maru: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', var(--font-sans);
   /* 年表画像のコメントなど、本文寄りのテキストに使うゴシック */
   --font-kaku: 'Zen Kaku Gothic New', var(--font-sans);

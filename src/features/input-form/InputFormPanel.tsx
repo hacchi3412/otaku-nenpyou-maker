@@ -18,14 +18,16 @@ export function InputFormPanel({
   return (
     <div className="flex flex-col gap-3">
       {[...years].reverse().map((entry) => {
-        // 入力フォームは新しい年が上に並ぶため、1つ上のカード（＝1つ新しい年）を
-        // 参照先にすると、上から順に埋めていく入力順と噛み合う
+        // 上から新しい年順・下から古い年順のどちらで埋めても引き継ぎ候補が出るよう、
+        // 前年（1つ下のカード）・翌年（1つ上のカード）の両方を参照する
+        const previousYear = years.find((y) => y.year === entry.year - 1)
         const nextYear = years.find((y) => y.year === entry.year + 1)
         return (
           <YearCard
             key={entry.year}
             year={entry.year}
             items={entry.items}
+            previousYearItems={previousYear?.items ?? []}
             nextYearItems={nextYear?.items ?? []}
             onChange={(items) => onChangeYearItems(entry.year, items)}
           />
