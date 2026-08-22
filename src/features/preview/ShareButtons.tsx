@@ -119,9 +119,16 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
           {status === 'sharing' ? '準備中…' : 'Xでシェア'}
         </button>
       </div>
-      {message && (
-        <p className="max-w-xs text-center text-xs text-[#8D869B]">{message}</p>
-      )}
+      {/*
+        「Xでシェア」は投稿画面を開くだけで、画像は自動添付されない
+        （クリップボードへのコピーを試みるが、貼り付けは手動）。
+        初見だと気づきにくいため、クリックする前から常にヒントを出しておく。
+        シェア操作直後は、結果に応じた具体的なメッセージに差し替える。
+      */}
+      <p className="max-w-xs text-center text-xs text-[#8D869B]">
+        {message ??
+          '「Xでシェア」は投稿画面が開きます。画像は投稿欄に貼り付けてください'}
+      </p>
     </div>
   )
 }
