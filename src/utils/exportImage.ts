@@ -43,5 +43,10 @@ export function downloadBlob(blob: Blob, fileName: string) {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+
+  // click()直後に同期的にrevokeすると、ブラウザが実際にBlobを読みに行く前に
+  // URLが無効になってしまうことがある（シークレット/プライベートブラウジングでは
+  // ダウンロード前の追加のセキュリティチェックなどで読み込みが遅れやすく、
+  // このタイミング競合が起きやすい）。十分な余裕を持たせてから解放する。
+  setTimeout(() => URL.revokeObjectURL(url), 2000)
 }
