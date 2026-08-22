@@ -31,12 +31,6 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
   const visibleYears = getVisibleYears(years)
   const laneCount = getUsedLaneCount(computeLaneSegments(visibleYears))
   const chartWidth = getChartWidth(laneCount)
-  const rangeLabel =
-    visibleYears.length === 0
-      ? ''
-      : visibleYears.length === 1
-        ? `${visibleYears[0].year}`
-        : `${visibleYears[0].year}-${visibleYears[visibleYears.length - 1].year}`
 
   return (
     <div>
@@ -50,19 +44,9 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
             boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
           }}
         >
-          <div className="mb-5 flex items-center justify-between gap-2">
-            <h2 className="font-maru text-[22px] font-black whitespace-nowrap text-[#4A4560]">
-              わたしの<span className="text-[#E8899F]">オタク年表</span>
-            </h2>
-            {rangeLabel && (
-              <span
-                className="font-kaku flex-shrink-0 rounded-[3px] px-[10px] py-1 text-xs font-bold whitespace-nowrap text-[#C15D78]"
-                style={{ border: '1px solid #F0C3D0' }}
-              >
-                {rangeLabel}
-              </span>
-            )}
-          </div>
+          <h2 className="font-maru mb-5 text-[22px] font-black whitespace-nowrap text-[#4A4560]">
+            わたしの<span className="text-[#E8899F]">オタク年表</span>
+          </h2>
 
           <TimelineChart years={years} laneCount={laneCount} />
 
@@ -71,7 +55,7 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
             style={{ borderTop: '1px solid #E4DEF0' }}
           >
             <p className="font-kaku text-[10.5px] text-[#A79FC2]">
-              オタク年表メーカーで作成
+              #オタク年表メーカー で作成
             </p>
           </div>
         </div>

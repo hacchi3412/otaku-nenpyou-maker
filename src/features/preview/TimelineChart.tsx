@@ -9,11 +9,6 @@ import {
 
 const MIN_ROW_HEIGHT = 58
 
-/** 年の目盛りは脇役として、下2桁＋アポストロフィの略記にする（例: 2026 → '26） */
-function formatYearAbbrev(year: number): string {
-  return `'${String(year).slice(-2)}`
-}
-
 interface TimelineChartProps {
   years: YearEntry[]
   /** 実際に使われているレーン数（getUsedLaneCountの戻り値）。グリッドの列数に使う */
@@ -85,8 +80,8 @@ export function TimelineChart({ years, laneCount }: TimelineChartProps) {
               backgroundColor: '#A79FC2',
             }}
           />
-          <span className="font-kaku ml-4 text-[10px] font-bold text-[#A79FC2]">
-            {formatYearAbbrev(entry.year)}
+          <span className="font-kaku ml-4 text-[12px] font-bold text-[#8D7FA8]">
+            {entry.year}
           </span>
         </div>
       ))}
