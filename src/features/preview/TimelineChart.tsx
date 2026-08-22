@@ -71,16 +71,16 @@ export function TimelineChart({ years }: TimelineChartProps) {
           style={{ gridColumn: 1, gridRow: index + 1, paddingTop: 2 }}
         >
           <span
-            className="absolute rounded-full bg-white"
+            className="absolute rounded-full"
             style={{
               left: 1.5,
               top: 2,
               width: 7,
               height: 7,
-              border: '2px solid #C9C2DE',
+              backgroundColor: '#A79FC2',
             }}
           />
-          <span className="font-maru ml-4 text-[10px] font-bold text-[#A79FC2]">
+          <span className="font-kaku ml-4 text-[10px] font-bold text-[#A79FC2]">
             {formatYearAbbrev(entry.year)}
           </span>
         </div>
@@ -89,20 +89,17 @@ export function TimelineChart({ years }: TimelineChartProps) {
       {segments.map((segment) => (
         <div
           key={`${segment.lane}-${segment.startIndex}-${segment.item.id}`}
-          className="flex flex-col items-start gap-[3px] overflow-hidden rounded-2xl px-3 py-2"
+          className="flex flex-col items-start gap-[3px] overflow-hidden rounded-[3px] px-3 py-2"
           style={{
             gridColumn: segment.lane + 2,
             gridRow: `${segment.startIndex + 1} / span ${segment.length}`,
             margin: '6px 0 4px',
+            // 枠線は使わず、パステルの塗り色だけで白背景から浮き立たせる
             backgroundColor: segment.item.color,
             color: getSwatchTextColor(segment.item.color),
-            // box-shadow（ぼかしあり）はiOS Safari上のhtml-to-image書き出しで
-            // ぼけずに硬い矩形として描画されてしまう既知の相性問題があるため使わない。
-            // 枠線の濃さで代わりに立体感を出す。
-            border: '1.75px solid rgba(74,69,96,0.18)',
           }}
         >
-          <p className="font-maru w-full text-left text-[13px] leading-[1.3] font-extrabold break-words">
+          <p className="font-kaku w-full text-left text-[13px] leading-[1.3] font-bold break-words">
             {segment.item.title}
           </p>
           {segment.item.comment && (
