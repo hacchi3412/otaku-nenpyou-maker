@@ -70,16 +70,16 @@ export function SlotRow({
 
           <div className="flex items-center justify-between">
             <div className="flex gap-1.5">
-              {SWATCH_COLORS.map((color) => (
+              {SWATCH_COLORS.map((swatch) => (
                 <button
-                  key={color}
+                  key={swatch.bg}
                   type="button"
-                  aria-label={`カラー ${color}`}
-                  aria-pressed={item.color === color}
-                  onClick={() => onColorChange(color)}
-                  style={{ backgroundColor: color }}
+                  aria-label={`カラー ${swatch.bg}`}
+                  aria-pressed={item.color === swatch.bg}
+                  onClick={() => onColorChange(swatch.bg)}
+                  style={{ backgroundColor: swatch.bg }}
                   className={`h-6 w-6 rounded-full border-2 transition ${
-                    item.color === color
+                    item.color === swatch.bg
                       ? 'border-[#262230]'
                       : 'border-transparent hover:border-[#D8D2E4]'
                   }`}

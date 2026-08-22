@@ -6,7 +6,7 @@ import { ShareButtons } from './ShareButtons'
 import { TimelineChart } from './TimelineChart'
 import { TimelineDecorations } from './TimelineDecorations'
 
-const CHART_WIDTH = 640
+const CHART_WIDTH = 600
 
 interface PreviewPanelProps {
   years: YearEntry[]
@@ -14,6 +14,8 @@ interface PreviewPanelProps {
 
 /**
  * 年表画像のプレビュー。
+ * カード自体（枠線・角丸・影）も含めて画像として書き出す対象なので、
+ * それらのスタイルはexportTargetRefのdivに直接持たせている。
  */
 export function PreviewPanel({ years }: PreviewPanelProps) {
   const exportTargetRef = useRef<HTMLDivElement>(null)
@@ -27,33 +29,45 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
         : `${visibleYears[0].year}-${visibleYears[visibleYears.length - 1].year}`
 
   return (
-    <div className="rounded-2xl border border-[#F0ECF5] bg-[#FBFAFD] p-3 shadow-sm sm:p-4">
+    <div>
       <ScaledCanvas width={CHART_WIDTH}>
-        {/* このdivがそのまま画像として書き出される対象（幅固定・スケール前の実寸） */}
         <div
           ref={exportTargetRef}
-          className="relative overflow-hidden bg-white px-6 py-8"
+          className="relative overflow-hidden rounded-[24px] px-7 pt-[30px] pb-[26px]"
+          style={{
+            backgroundColor: '#FFFDFB',
+            border: '2px solid #E4DEF0',
+            boxShadow: '0 20px 50px -20px rgba(74,69,96,0.28)',
+          }}
         >
           <TimelineDecorations />
 
-          <div className="relative flex flex-col items-center">
-            <h2 className="text-lg font-bold text-[#262230]">
-              わたしのオタク年表
+          <div className="relative mb-5 flex items-center justify-between gap-2">
+            <h2 className="font-maru text-[22px] font-black whitespace-nowrap text-[#4A4560]">
+              わたしの<span className="text-[#E8899F]">オタク年表</span>
             </h2>
             {rangeLabel && (
-              <span className="mt-2 inline-flex items-center rounded-full bg-[#F5F2FA] px-3 py-1 text-xs font-medium text-[#8D869B]">
+              <span
+                className="font-maru flex-shrink-0 rounded-full px-[11px] py-1 text-xs font-bold whitespace-nowrap text-[#6B6480]"
+                style={{ background: '#F7F4FC', border: '1.5px solid #E4DEF0' }}
+              >
                 {rangeLabel}
               </span>
             )}
           </div>
 
-          <div className="relative mt-6">
+          <div className="relative">
             <TimelineChart years={years} />
           </div>
 
-          <p className="relative mt-6 text-center text-[10px] text-[#C9C3D6]">
-            オタク年表メーカー
-          </p>
+          <div
+            className="relative mt-4 flex justify-end pt-[14px]"
+            style={{ borderTop: '1.5px dashed #E4DEF0' }}
+          >
+            <p className="font-maru text-[10.5px] text-[#A79FC2]">
+              オタク年表メーカーで作成
+            </p>
+          </div>
         </div>
       </ScaledCanvas>
 
