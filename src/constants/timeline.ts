@@ -23,14 +23,14 @@ export interface SwatchColor {
  * ブロックのパステルカラー・スウォッチ。
  * 未指定時のランダム割り当てにも、手動選択にもこの配列を使う。
  * textは背景に対して可読性を保ちつつ主張を抑えられるよう、同系統の濃い色にしている。
- * Radix Colorsの落ち着いたトーンを参考に、彩度を抑えた配色にしている。
+ * Open Colorのクリーンで発色の良いトーンを参考にした配色にしている。
  */
 export const SWATCH_COLORS: readonly SwatchColor[] = [
-  { bg: '#F8E1E7', text: '#9D4A61' }, // ローズ
-  { bg: '#F6E6C8', text: '#8A6520' }, // アンバー
-  { bg: '#D9EDE3', text: '#2F7A5C' }, // ミント
-  { bg: '#E4E0F7', text: '#5B4FA8' }, // アイリス
-  { bg: '#DCEAF5', text: '#386695' }, // スカイ
+  { bg: '#FFE3EC', text: '#C2255C' }, // ピンク
+  { bg: '#FFF3BF', text: '#997404' }, // イエロー
+  { bg: '#C3FAE8', text: '#087F5B' }, // ティール
+  { bg: '#F3D9FA', text: '#862E9C' }, // グレープ
+  { bg: '#D0EBFF', text: '#1864AB' }, // ブルー
 ] as const
 
 export const LOCAL_STORAGE_KEY = 'otaku-nenpyou-maker:data'
