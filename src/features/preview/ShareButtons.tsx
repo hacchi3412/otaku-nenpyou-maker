@@ -1,10 +1,14 @@
-import { useState, type RefObject } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
 import {
   DEFAULT_SHARE_TEXT,
   EXPORT_FILE_NAME,
   SITE_URL,
 } from '../../constants/share'
-import { downloadBlob, exportNodeAsPngBlob } from '../../utils/exportImage'
+import {
+  downloadBlob,
+  exportNodeAsPngBlob,
+  prefetchFontEmbedCSS,
+} from '../../utils/exportImage'
 import { isIOS } from '../../utils/platform'
 
 interface ShareButtonsProps {
@@ -25,6 +29,15 @@ type Status = 'idle' | 'saving' | 'sharing'
 export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState<string | null>(null)
+
+  // 「保存」「Xでシェア」を押した瞬間にフォント埋め込み用CSSの取得（数百リクエスト
+  // 規模になりうる重い処理。詳細はexportImage.tsのコメント参照）が走ると体感が
+  // 遅くなるため、プレビューが表示されている間に先読みしておく。
+  useEffect(() => {
+    if (exportTargetRef.current) {
+      prefetchFontEmbedCSS(exportTargetRef.current)
+    }
+  }, [exportTargetRef])
 
   const handleSave = async () => {
     if (!exportTargetRef.current) return
