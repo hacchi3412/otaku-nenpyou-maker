@@ -21,6 +21,8 @@ interface SlotRowProps {
  * 1項目分の入力欄。
  * itemが未定義の間はジャンル名入力のみのドラフト枠として表示し、
  * 入力が始まるとコメント・カラー・削除ボタンが現れる。
+ * コメントは長めの文章でも入力中に先頭が見えなくなったり上限文字数が
+ * わかりにくかったりしないよう、2行のtextarea＋文字数カウンター表示にしている。
  */
 export function SlotRow({
   item,
@@ -59,14 +61,19 @@ export function SlotRow({
 
       {item && (
         <div className="mt-2 flex flex-col gap-2">
-          <input
-            type="text"
-            value={item.comment}
-            onChange={(e) => onCommentChange(e.target.value)}
-            maxLength={COMMENT_MAX_LENGTH}
-            placeholder="一言コメント（任意）"
-            className="w-full rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-xs text-[#6B6375] outline-none focus:border-[#BFB4D6]"
-          />
+          <div>
+            <textarea
+              value={item.comment}
+              onChange={(e) => onCommentChange(e.target.value)}
+              maxLength={COMMENT_MAX_LENGTH}
+              placeholder="一言コメント（任意）"
+              rows={2}
+              className="w-full resize-none rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-xs text-[#6B6375] outline-none focus:border-[#BFB4D6]"
+            />
+            <p className="mt-0.5 text-right text-[10px] text-[#B9B2C7]">
+              {item.comment.length}/{COMMENT_MAX_LENGTH}
+            </p>
+          </div>
 
           <div className="flex items-center justify-between">
             <div className="flex gap-1.5">
