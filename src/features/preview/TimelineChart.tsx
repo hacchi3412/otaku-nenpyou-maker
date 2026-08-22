@@ -96,8 +96,10 @@ export function TimelineChart({ years }: TimelineChartProps) {
             margin: '6px 0 4px',
             backgroundColor: segment.item.color,
             color: getSwatchTextColor(segment.item.color),
-            border: '1.75px solid rgba(74,69,96,0.14)',
-            boxShadow: '0 4px 10px -4px rgba(74,69,96,0.22)',
+            // box-shadow（ぼかしあり）はiOS Safari上のhtml-to-image書き出しで
+            // ぼけずに硬い矩形として描画されてしまう既知の相性問題があるため使わない。
+            // 枠線の濃さで代わりに立体感を出す。
+            border: '1.75px solid rgba(74,69,96,0.18)',
           }}
         >
           <p className="font-maru w-full text-left text-[13px] leading-[1.3] font-extrabold break-words">
