@@ -49,8 +49,8 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
             </h2>
             {rangeLabel && (
               <span
-                className="font-maru flex-shrink-0 rounded-full px-[11px] py-1 text-xs font-bold whitespace-nowrap text-[#6B6480]"
-                style={{ background: '#F7F4FC', border: '1.5px solid #E4DEF0' }}
+                className="font-kaku flex-shrink-0 rounded-full px-[11px] py-1 text-xs font-bold whitespace-nowrap text-[#C15D78]"
+                style={{ background: '#FCF0F3', border: '1.5px solid #F5D6DF' }}
               >
                 {rangeLabel}
               </span>
@@ -63,9 +63,9 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
 
           <div
             className="relative mt-4 flex justify-end pt-[14px]"
-            style={{ borderTop: '1.5px dashed #E4DEF0' }}
+            style={{ borderTop: '1px solid #E4DEF0' }}
           >
-            <p className="font-maru text-[10.5px] text-[#A79FC2]">
+            <p className="font-kaku text-[10.5px] text-[#A79FC2]">
               オタク年表メーカーで作成
             </p>
           </div>

@@ -80,7 +80,7 @@ export function TimelineChart({ years }: TimelineChartProps) {
               border: '2px solid #C9C2DE',
             }}
           />
-          <span className="font-maru ml-4 text-[10px] font-bold text-[#A79FC2]">
+          <span className="font-kaku ml-4 text-[10px] font-bold text-[#A79FC2]">
             {formatYearAbbrev(entry.year)}
           </span>
         </div>
@@ -102,7 +102,7 @@ export function TimelineChart({ years }: TimelineChartProps) {
             border: '1.75px solid rgba(74,69,96,0.18)',
           }}
         >
-          <p className="font-maru w-full text-left text-[13px] leading-[1.3] font-extrabold break-words">
+          <p className="font-kaku w-full text-left text-[13px] leading-[1.3] font-bold break-words">
             {segment.item.title}
           </p>
           {segment.item.comment && (

@@ -10,7 +10,7 @@ interface SparkleProps {
 function Sparkle({ className, size, color }: SparkleProps) {
   return (
     <svg
-      className={`absolute opacity-90 ${className}`}
+      className={`absolute opacity-70 ${className}`}
       style={{ width: size, height: size }}
       viewBox="0 0 24 24"
       fill="none"
@@ -20,29 +20,9 @@ function Sparkle({ className, size, color }: SparkleProps) {
   )
 }
 
-interface DotProps {
-  className: string
-  size: number
-  color: string
-}
-
-function Dot({ className, size, color }: DotProps) {
-  return (
-    <svg
-      className={`absolute opacity-90 ${className}`}
-      style={{ width: size, height: size }}
-      viewBox="0 0 24 24"
-      fill="none"
-    >
-      <circle cx="12" cy="12" r="4" fill={color} />
-    </svg>
-  )
-}
-
 /**
- * 控えめな線画装飾（きらめき・丸）。年表画像のアクセントとして散らす。
- * 年数が多いと画像がかなり縦に伸びるため、四隅だけでなく高さに沿って
- * パーセント位置でも散らし、どんな長さでも寂しくならないようにしている。
+ * 控えめな線画装飾。年表画像のアクセントとして、見出し・署名の近くに1つずつだけ添える。
+ * 散りばめすぎるとにぎやかになりすぎるため、最小限に絞っている。
  */
 export function TimelineDecorations() {
   return (
@@ -50,18 +30,8 @@ export function TimelineDecorations() {
       aria-hidden
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      {/* 四隅 */}
-      <Sparkle className="top-4 left-4" size={22} color="#D9CFF5" />
-      <Sparkle className="top-20 right-3.5" size={20} color="#FFE8B8" />
-      <Sparkle className="right-4 bottom-[54px]" size={22} color="#FFD4DC" />
-      <Dot className="bottom-3.5 left-[52px]" size={16} color="#D9CFF5" />
-
-      {/* 高さに沿って散らす分（コンテンツが長くなっても寂しくならないように） */}
-      <Dot className="top-[18%] right-8" size={14} color="#B9E6D9" />
-      <Sparkle className="top-[32%] left-2" size={16} color="#B9E6D9" />
-      <Sparkle className="top-[48%] right-2" size={18} color="#BFE0F5" />
-      <Dot className="top-[63%] left-6" size={14} color="#FFE8B8" />
-      <Sparkle className="top-[78%] right-6" size={16} color="#D9CFF5" />
+      <Sparkle className="top-5 right-4" size={16} color="#D9CFF5" />
+      <Sparkle className="right-5 bottom-4" size={14} color="#FFD4DC" />
     </div>
   )
 }
