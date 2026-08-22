@@ -82,5 +82,10 @@ export function useTimelineData() {
     }))
   }, [setData])
 
-  return { years: data.years, updateYearItems, addPastYears }
+  /** 入力済みの年表データをすべて削除し、初期状態に戻す */
+  const resetAll = useCallback(() => {
+    setData(createInitialData())
+  }, [setData])
+
+  return { years: data.years, updateYearItems, addPastYears, resetAll }
 }

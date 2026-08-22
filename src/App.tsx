@@ -7,12 +7,12 @@ import { useTimelineData } from './hooks/useTimelineData'
 type MobileTab = 'input' | 'preview'
 
 function App() {
-  const { years, updateYearItems, addPastYears } = useTimelineData()
+  const { years, updateYearItems, addPastYears, resetAll } = useTimelineData()
   const [mobileTab, setMobileTab] = useState<MobileTab>('input')
 
   return (
     <div className="min-h-svh bg-[#FAF8FC]">
-      <Header />
+      <Header onResetAll={resetAll} />
 
       <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
         {/* スマホ：入力／プレビューのタブ切り替え */}

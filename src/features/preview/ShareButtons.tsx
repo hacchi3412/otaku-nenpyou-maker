@@ -36,17 +36,38 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
       // iOS SafariはBlobの<a download>を「保存」ではなく「画像を開くだけ」として
       // 扱ってしまい、そこから長押しで保存する手間が発生する。
       // ネイティブの共有シート経由なら「イメージを保存」がワンタップで並ぶため、
-      // iOSではこちらを優先する（テキストは付けず、保存だけを促す）
-      if (isIOS() && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file] })
-      } else {
+      // iOSではこちらを優先する（テキストは付けず、保存だけを促す）。
+      //
+      // ただしWeb Share APIはプライベートブラウジング中などに失敗することがある
+      // （canShareがtrueを返してもshare()自体がNotAllowedError等で拒否される事例が
+      // 報告されている）。ユーザーが共有をキャンセルした場合（AbortError）以外は、
+      // 通常のダウンロードにフォールバックして保存自体は完了させる。
+      let saved = false
+      if (isIOS()) {
+        try {
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file] })
+            saved = true
+          }
+        } catch (shareError) {
+          if (
+            shareError instanceof DOMException &&
+            shareError.name === 'AbortError'
+          ) {
+            // 共有シートをユーザーがキャンセルした場合は何もしない
+            return
+          }
+          console.warn(
+            '共有シートでの保存に失敗したため、直接ダウンロードにフォールバックします',
+            shareError,
+          )
+        }
+      }
+
+      if (!saved) {
         downloadBlob(blob, EXPORT_FILE_NAME)
       }
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        // 共有シートをユーザーがキャンセルした場合は何もしない
-        return
-      }
       console.error(error)
       setMessage('画像の保存に失敗しました。もう一度お試しください。')
     } finally {
