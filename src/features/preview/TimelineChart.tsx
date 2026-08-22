@@ -1,12 +1,12 @@
 import type { YearEntry } from '../../types/timeline'
-import { MAX_ITEMS_PER_YEAR } from '../../constants/timeline'
 import { getSwatchTextColor } from '../../utils/color'
 import {
+  AXIS_WIDTH,
   computeLaneSegments,
   getVisibleYears,
+  LANE_WIDTH,
 } from '../../utils/timelineLayout'
 
-const AXIS_WIDTH = 32
 const MIN_ROW_HEIGHT = 58
 
 /** 年の目盛りは脇役として、下2桁＋アポストロフィの略記にする（例: 2026 → '26） */
@@ -16,14 +16,19 @@ function formatYearAbbrev(year: number): string {
 
 interface TimelineChartProps {
   years: YearEntry[]
+  /** 実際に使われているレーン数（getUsedLaneCountの戻り値）。グリッドの列数に使う */
+  laneCount: number
 }
 
 /**
- * 年表本体。左端に年の目盛り、右側に最大3レーンの作品ブロックを配置する。
+ * 年表本体。左端に年の目盛り、右側に実使用レーン数ぶんの作品ブロックを配置する。
  * 複数年にまたがる項目は、CSS Gridの行スパンでレーンをまたがず縦に連続した
  * 1つのブロックとして描画する（線でつながって見える表現）。
+ * レーンは固定px幅（LANE_WIDTH）で、列数はlaneCountに応じて可変にする。
+ * これにより、使用レーン数が少ないときにカード全体の横幅も自動的に狭まる
+ * （PreviewPanel側でgetChartWidth(laneCount)を使って外枠の幅を合わせている）。
  */
-export function TimelineChart({ years }: TimelineChartProps) {
+export function TimelineChart({ years, laneCount }: TimelineChartProps) {
   const visibleYears = getVisibleYears(years)
 
   if (visibleYears.length === 0) {
@@ -44,7 +49,7 @@ export function TimelineChart({ years }: TimelineChartProps) {
     <div
       className="grid gap-x-[10px] gap-y-0"
       style={{
-        gridTemplateColumns: `${AXIS_WIDTH}px repeat(${MAX_ITEMS_PER_YEAR}, 1fr)`,
+        gridTemplateColumns: `${AXIS_WIDTH}px repeat(${laneCount}, ${LANE_WIDTH}px)`,
         gridTemplateRows: `repeat(${visibleYears.length}, minmax(${MIN_ROW_HEIGHT}px, auto))`,
       }}
     >

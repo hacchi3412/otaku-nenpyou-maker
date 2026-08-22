@@ -88,3 +88,37 @@ export function computeLaneSegments(visibleYears: YearEntry[]): LaneSegment[] {
 
   return segments
 }
+
+/** 年表カードのレイアウト定数（PreviewPanel・TimelineChartで共通利用） */
+export const AXIS_WIDTH = 32
+/** レーン1つあたりの横幅（px）。MAX_ITEMS_PER_YEAR=3レーン使用時に旧固定幅600pxと一致する値 */
+export const LANE_WIDTH = 482 / 3
+export const LANE_GAP = 10
+/** カードの左右パディング合計（px-7 = 28px × 2） */
+const CARD_PADDING_X = 56
+/**
+ * レーン数が少ないときに見出し・フッターが窮屈にならないための最小幅。
+ * 「わたしのオタク年表」見出し＋年範囲バッジが1行に収まる幅を目安にしている。
+ */
+const MIN_CHART_WIDTH = 380
+
+/**
+ * 実際に使われているレーン数（1〜MAX_ITEMS_PER_YEAR）を返す。
+ * セグメントが1つもない場合は1を返す。
+ */
+export function getUsedLaneCount(segments: LaneSegment[]): number {
+  if (segments.length === 0) {
+    return 1
+  }
+  return Math.max(...segments.map((segment) => segment.lane + 1))
+}
+
+/**
+ * 実際に使われているレーン数に応じた年表カードの横幅（px）を返す。
+ * ブロック列が少ないときに右側へ余分な余白ができないよう、
+ * レーン数に比例して幅を縮める（見出しが窮屈にならない最小幅は下限として維持）。
+ */
+export function getChartWidth(laneCount: number): number {
+  const raw = CARD_PADDING_X + AXIS_WIDTH + laneCount * (LANE_WIDTH + LANE_GAP)
+  return Math.max(MIN_CHART_WIDTH, raw)
+}
