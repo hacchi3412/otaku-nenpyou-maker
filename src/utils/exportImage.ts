@@ -17,23 +17,6 @@ export async function exportNodeAsPngBlob(node: HTMLElement): Promise<Blob> {
   return blob
 }
 
-/**
- * 画像BlobをクリップボードにコピーしてPasteできるようにする。
- * Clipboard APIが使えない・拒否された場合はfalseを返す（呼び出し側でフォールバックする）。
- */
-export async function copyImageToClipboard(blob: Blob): Promise<boolean> {
-  try {
-    if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
-      return false
-    }
-    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
-    return true
-  } catch (error) {
-    console.warn('クリップボードへの画像コピーに失敗しました', error)
-    return false
-  }
-}
-
 /** Blobをファイルとしてブラウザにダウンロードさせる */
 export function downloadBlob(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob)
