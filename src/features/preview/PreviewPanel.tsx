@@ -61,7 +61,7 @@ export function PreviewPanel({
           onChange={(e) => onDisplayNameChange(e.target.value)}
           maxLength={DISPLAY_NAME_MAX_LENGTH}
           placeholder={DEFAULT_DISPLAY_NAME}
-          className="w-24 rounded-lg border border-[#E5E0EE] bg-white px-2 py-1 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+          className="w-56 rounded-lg border border-[#E5E0EE] bg-white px-2 py-1 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
         />
       </div>
 

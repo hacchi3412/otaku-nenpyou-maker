@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Footer } from './components/Footer'
 import { Header } from './components/Header'
 import { DISPLAY_NAME_STORAGE_KEY } from './constants/timeline'
 import { InputFormPanel } from './features/input-form/InputFormPanel'
@@ -69,6 +70,8 @@ function App() {
           </section>
         </div>
       </main>
+
+      <Footer />
     </div>
   )
 }
