@@ -99,9 +99,10 @@ export const LANE_GAP = 10
 const CARD_PADDING_X = 56
 /**
  * レーン数が少ないときに見出しが窮屈にならないための最小幅。
- * 「わたしのオタク年表」見出しが1行に収まる幅を目安にしている。
+ * 表示名（最大DISPLAY_NAME_MAX_LENGTH文字）を使った最長の見出し
+ * 「（表示名10文字）のオタク年表」が1行に収まる幅を、実描画で確認して決めている。
  */
-const MIN_CHART_WIDTH = 300
+const MIN_CHART_WIDTH = 400
 
 /**
  * 実際に使われているレーン数（1〜MAX_ITEMS_PER_YEAR）を返す。
