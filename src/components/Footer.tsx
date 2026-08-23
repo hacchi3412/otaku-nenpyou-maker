@@ -17,7 +17,7 @@ export function Footer() {
         >
           お問い合わせフォーム
         </a>
-        からお気軽にどうぞ
+        まで
       </p>
     </footer>
   )
