@@ -1,4 +1,8 @@
 import { useRef } from 'react'
+import {
+  DEFAULT_DISPLAY_NAME,
+  DISPLAY_NAME_MAX_LENGTH,
+} from '../../constants/timeline'
 import type { YearEntry } from '../../types/timeline'
 import {
   computeLaneSegments,
@@ -12,6 +16,9 @@ import { TimelineChart } from './TimelineChart'
 
 interface PreviewPanelProps {
   years: YearEntry[]
+  /** 見出し・シェア文言に使う表示名（空文字なら「わたし」表示） */
+  displayName: string
+  onDisplayNameChange: (value: string) => void
 }
 
 /**
@@ -25,15 +32,39 @@ interface PreviewPanelProps {
  * カード全体の横幅は、実際に使われているレーン数（1〜3）に応じて可変にする。
  * ブロック列が少ないときに右側へ余分な余白ができないようにするため。
  */
-export function PreviewPanel({ years }: PreviewPanelProps) {
+export function PreviewPanel({
+  years,
+  displayName,
+  onDisplayNameChange,
+}: PreviewPanelProps) {
   const exportTargetRef = useRef<HTMLDivElement>(null)
 
   const visibleYears = getVisibleYears(years)
   const laneCount = getUsedLaneCount(computeLaneSegments(visibleYears))
   const chartWidth = getChartWidth(laneCount)
+  const headingOwner = displayName.trim() || DEFAULT_DISPLAY_NAME
 
   return (
     <div>
+      {/*
+        名前の入力欄は書き出し対象（exportTargetRef）の外に置く。
+        中に置くと入力欄自体が画像として書き出されてしまうため。
+      */}
+      <div className="mb-3 flex items-center gap-2">
+        <label htmlFor="display-name" className="text-xs text-[#8D869B]">
+          見出しの名前
+        </label>
+        <input
+          id="display-name"
+          type="text"
+          value={displayName}
+          onChange={(e) => onDisplayNameChange(e.target.value)}
+          maxLength={DISPLAY_NAME_MAX_LENGTH}
+          placeholder={DEFAULT_DISPLAY_NAME}
+          className="w-24 rounded-lg border border-[#E5E0EE] bg-white px-2 py-1 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+        />
+      </div>
+
       <ScaledCanvas width={chartWidth}>
         <div
           ref={exportTargetRef}
@@ -45,7 +76,7 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
           }}
         >
           <h2 className="font-maru mb-5 text-[22px] font-black whitespace-nowrap text-[#4A4560]">
-            わたしの<span className="text-[#E8899F]">オタク年表</span>
+            {headingOwner}の<span className="text-[#E8899F]">オタク年表</span>
           </h2>
 
           <TimelineChart years={years} laneCount={laneCount} />
@@ -61,7 +92,10 @@ export function PreviewPanel({ years }: PreviewPanelProps) {
         </div>
       </ScaledCanvas>
 
-      <ShareButtons exportTargetRef={exportTargetRef} />
+      <ShareButtons
+        exportTargetRef={exportTargetRef}
+        displayName={displayName}
+      />
     </div>
   )
 }
