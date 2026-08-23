@@ -51,3 +51,10 @@ export const DISPLAY_NAME_MAX_LENGTH = 10
 
 /** 表示名が未入力のときに使うデフォルト値（見出しは「わたしのオタク年表」になる） */
 export const DEFAULT_DISPLAY_NAME = 'わたし'
+
+/**
+ * 初回訪問時のスポットライト・チュートリアルを見終えた（または閉じた）かどうかを
+ * 保存するキー。ユーザーテストで「開いた瞬間何をしていいかわからない」という
+ * 声があったため導入した。一度見た・閉じたら二度と出さない。
+ */
+export const TUTORIAL_SEEN_STORAGE_KEY = 'otaku-nenpyou-maker:tutorial-seen'
