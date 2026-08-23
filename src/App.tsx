@@ -1,13 +1,19 @@
 import { useState } from 'react'
 import { Header } from './components/Header'
+import { DISPLAY_NAME_STORAGE_KEY } from './constants/timeline'
 import { InputFormPanel } from './features/input-form/InputFormPanel'
 import { PreviewPanel } from './features/preview/PreviewPanel'
+import { useLocalStorage } from './hooks/useLocalStorage'
 import { useTimelineData } from './hooks/useTimelineData'
 
 type MobileTab = 'input' | 'preview'
 
 function App() {
   const { years, updateYearItems, addPastYears, resetAll } = useTimelineData()
+  const [displayName, setDisplayName] = useLocalStorage(
+    DISPLAY_NAME_STORAGE_KEY,
+    '',
+  )
   const [mobileTab, setMobileTab] = useState<MobileTab>('input')
 
   return (
@@ -55,7 +61,11 @@ function App() {
           <section
             className={mobileTab === 'preview' ? 'block' : 'hidden lg:block'}
           >
-            <PreviewPanel years={years} />
+            <PreviewPanel
+              years={years}
+              displayName={displayName}
+              onDisplayNameChange={setDisplayName}
+            />
           </section>
         </div>
       </main>

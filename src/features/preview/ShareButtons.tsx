@@ -1,6 +1,6 @@
 import { useEffect, useState, type RefObject } from 'react'
 import {
-  DEFAULT_SHARE_TEXT,
+  buildShareCaption,
   EXPORT_FILE_NAME,
   SITE_URL,
 } from '../../constants/share'
@@ -14,6 +14,8 @@ import { canShareFiles, isIOS } from '../../utils/platform'
 interface ShareButtonsProps {
   /** 画像として書き出す対象（幅固定の年表本体）への参照 */
   exportTargetRef: RefObject<HTMLElement | null>
+  /** シェア文言に使う表示名（空文字なら「わたし」表示）。見出しと同じ値を使う */
+  displayName: string
 }
 
 type Status = 'idle' | 'saving' | 'sharing'
@@ -31,7 +33,10 @@ const PC_FALLBACK_HINT =
  *   従来通り、画像を先にダウンロードしてからXの投稿画面を新規タブで開く方式に
  *   フォールバックする（詳細は7章参照）
  */
-export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
+export function ShareButtons({
+  exportTargetRef,
+  displayName,
+}: ShareButtonsProps) {
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState<string | null>(null)
   // 共有シートに画像を渡せるかどうかは実行環境（主にOS・ブラウザ）で決まり、
@@ -121,7 +126,7 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
         try {
           await navigator.share({
             files: [file],
-            text: `${DEFAULT_SHARE_TEXT}\n${SITE_URL}`,
+            text: `${buildShareCaption(displayName)}\n${SITE_URL}`,
           })
           return
         } catch (shareError) {
@@ -155,7 +160,7 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
       // 「画像が保存されないまま投稿画面だけ開く」場合より実害は小さいと判断した。
       downloadBlob(blob, EXPORT_FILE_NAME)
 
-      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(DEFAULT_SHARE_TEXT)}&url=${encodeURIComponent(SITE_URL)}`
+      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(buildShareCaption(displayName))}&url=${encodeURIComponent(SITE_URL)}`
       window.open(intentUrl, '_blank', 'noopener,noreferrer')
 
       setMessage(

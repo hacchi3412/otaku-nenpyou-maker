@@ -8,9 +8,10 @@ import {
 } from '../constants/timeline'
 import type { TimelineData, TimelineItem } from '../types/timeline'
 import {
+  findExistingColorForTitle,
   findExistingCommentForTitle,
-  propagateCommentsByTitle,
-} from '../utils/commentSync'
+  propagateItemsByTitle,
+} from '../utils/itemSync'
 import { createInitialYears, prependPastYears } from '../utils/years'
 
 function createInitialData(): TimelineData {
@@ -40,35 +41,46 @@ export function useTimelineData() {
         )
 
         // 新規追加された項目（前後の年から引き継ぐ場合を含む）は、
-        // すでに他の年で使われている同じジャンル名のコメントがあれば引き継ぐ
-        const itemsWithInheritedComments = trimmedItems.map((item) => {
+        // すでに他の年で使われている同じジャンル名のコメント・カラーがあれば引き継ぐ。
+        // コメントは自由記述なので空の場合のみ、カラーはジャンルの識別子的な
+        // 位置づけなので見つかれば常に引き継ぐ（新規項目にはこの時点で
+        // ランダムな色が入っているだけなので、既存ジャンルの色で上書きする）
+        const itemsWithInheritedFields = trimmedItems.map((item) => {
           const isNewItem = !prevItemIds.has(item.id)
-          if (isNewItem && item.comment === '') {
-            const inherited = findExistingCommentForTitle(
-              prev.years,
-              item.title,
-            )
-            if (inherited !== undefined) {
-              return { ...item, comment: inherited }
-            }
+          if (!isNewItem) return item
+
+          const inheritedComment =
+            item.comment === ''
+              ? findExistingCommentForTitle(prev.years, item.title)
+              : undefined
+          const inheritedColor = findExistingColorForTitle(
+            prev.years,
+            item.title,
+          )
+
+          if (inheritedComment === undefined && inheritedColor === undefined) {
+            return item
           }
-          return item
+          return {
+            ...item,
+            ...(inheritedComment !== undefined
+              ? { comment: inheritedComment }
+              : {}),
+            ...(inheritedColor !== undefined ? { color: inheritedColor } : {}),
+          }
         })
 
         const updatedYears = prev.years.map((entry) =>
           entry.year === year
-            ? { ...entry, items: itemsWithInheritedComments }
+            ? { ...entry, items: itemsWithInheritedFields }
             : entry,
         )
 
-        // 同じジャンル名を持つ項目のコメントを、今回更新した年の内容に揃えて
-        // 他の年にも伝播する（どの年で編集しても全年に反映されるようにする）
+        // 同じジャンル名を持つ項目のコメント・カラーを、今回更新した年の内容に
+        // 揃えて他の年にも伝播する（どの年で編集しても全年に反映されるようにする）
         return {
           ...prev,
-          years: propagateCommentsByTitle(
-            updatedYears,
-            itemsWithInheritedComments,
-          ),
+          years: propagateItemsByTitle(updatedYears, itemsWithInheritedFields),
         }
       })
     },

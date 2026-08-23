@@ -34,3 +34,16 @@ export const SWATCH_COLORS: readonly SwatchColor[] = [
 ] as const
 
 export const LOCAL_STORAGE_KEY = 'otaku-nenpyou-maker:data'
+
+/**
+ * 見出し（「わたしのオタク年表」）・シェア文言に使う表示名を保存するキー。
+ * 年表本体のデータ（years）とはライフサイクルが異なる（バージョン移行が
+ * 不要な単純な文字列）ため、TimelineDataとは別のキーで独立して保持する。
+ */
+export const DISPLAY_NAME_STORAGE_KEY = 'otaku-nenpyou-maker:display-name'
+
+/** 表示名の最大文字数。見出しが1行に収まる範囲に収めるため短めにしている */
+export const DISPLAY_NAME_MAX_LENGTH = 6
+
+/** 表示名が未入力のときに使うデフォルト値（見出しは「わたしのオタク年表」になる） */
+export const DEFAULT_DISPLAY_NAME = 'わたし'
