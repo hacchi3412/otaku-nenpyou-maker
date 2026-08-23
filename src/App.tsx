@@ -1,13 +1,18 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Footer } from './components/Footer'
 import { Header } from './components/Header'
-import { DISPLAY_NAME_STORAGE_KEY } from './constants/timeline'
+import { TutorialOverlay } from './components/TutorialOverlay'
+import {
+  DISPLAY_NAME_STORAGE_KEY,
+  TUTORIAL_SEEN_STORAGE_KEY,
+} from './constants/timeline'
 import { InputFormPanel } from './features/input-form/InputFormPanel'
 import { PreviewPanel } from './features/preview/PreviewPanel'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { useTimelineData } from './hooks/useTimelineData'
 
 type MobileTab = 'input' | 'preview'
+type TutorialStep = 1 | 2
 
 function App() {
   const { years, updateYearItems, addPastYears, resetAll } = useTimelineData()
@@ -16,6 +21,30 @@ function App() {
     '',
   )
   const [mobileTab, setMobileTab] = useState<MobileTab>('input')
+
+  // 初回訪問時のスポットライト・チュートリアル。
+  // ユーザーテストで「開いた瞬間何をしていいかわからない」という声があったため導入。
+  // 一度閉じる（✕、または最終ステップの完了）とlocalStorageに記録し、以降は出さない。
+  const [tutorialSeen, setTutorialSeen] = useLocalStorage(
+    TUTORIAL_SEEN_STORAGE_KEY,
+    false,
+  )
+  const [tutorialStep, setTutorialStep] = useState<TutorialStep>(1)
+  const inputSectionRef = useRef<HTMLElement>(null)
+  const previewSectionRef = useRef<HTMLElement>(null)
+
+  const closeTutorial = () => setTutorialSeen(true)
+  const advanceTutorial = () => {
+    if (tutorialStep === 1) {
+      setTutorialStep(2)
+      // スマホは選択中タブしか表示されないため、ステップ2の対象（プレビュー）が
+      // 実際に見えるよう、進めると同時にタブも切り替える。PC表示では両方常に
+      // 見えているため、この切り替えは見た目に影響しない
+      setMobileTab('preview')
+    } else {
+      closeTutorial()
+    }
+  }
 
   return (
     <div className="min-h-svh bg-[#FAF8FC]">
@@ -51,6 +80,7 @@ function App() {
         {/* PC：左右並び／スマホ：選択中タブのみ表示 */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section
+            ref={inputSectionRef}
             className={mobileTab === 'input' ? 'block' : 'hidden lg:block'}
           >
             <InputFormPanel
@@ -60,6 +90,7 @@ function App() {
             />
           </section>
           <section
+            ref={previewSectionRef}
             className={mobileTab === 'preview' ? 'block' : 'hidden lg:block'}
           >
             <PreviewPanel
@@ -72,6 +103,31 @@ function App() {
       </main>
 
       <Footer />
+
+      {!tutorialSeen &&
+        (tutorialStep === 1 ? (
+          <TutorialOverlay
+            targetRef={inputSectionRef}
+            step={1}
+            totalSteps={2}
+            title="ここから年表を作ろう"
+            description="ハマってきた作品や趣味を、年ごとに入力してみましょう。ジャンル名を入力するだけでOKです。"
+            nextLabel="次へ"
+            onNext={advanceTutorial}
+            onClose={closeTutorial}
+          />
+        ) : (
+          <TutorialOverlay
+            targetRef={previewSectionRef}
+            step={2}
+            totalSteps={2}
+            title="入力するとリアルタイムで反映"
+            description="入力した内容が、ここに年表画像としてすぐに反映されます。完成したら画像として保存したり、Xでシェアしたりできます。"
+            nextLabel="はじめる"
+            onNext={advanceTutorial}
+            onClose={closeTutorial}
+          />
+        ))}
     </div>
   )
 }
