@@ -109,12 +109,19 @@ export function ShareButtons({ exportTargetRef }: ShareButtonsProps) {
         // OS標準の共有シートに画像・キャプション・URLをまとめて渡す。
         // 添付は共有シート側で自動的に行われるため、手動添付の案内は不要。
         // 宛先はユーザーが共有シートから選ぶため、Xとは限らない。
+        //
+        // urlは独立したフィールドとして渡さず、textに直接埋め込んでいる。
+        // filesと一緒にurlを渡すと、iOS（WebKit）+ Xの組み合わせで実機検証した際に
+        // urlだけが共有結果から欠落する（画像とキャプションは渡るがURLが本文に
+        // 含まれない）ことを確認した。WebKitはfilesと他のフィールドを併用した際の
+        // 挙動が不安定なことが知られており、Androidの共有（Intent.ACTION_SEND）も
+        // もともとtext/urlを分けて渡せず1本の文字列に結合される仕様のため、
+        // urlは常にtextの一部として渡す方が環境をまたいで確実に届く。
         const file = new File([blob], EXPORT_FILE_NAME, { type: 'image/png' })
         try {
           await navigator.share({
             files: [file],
-            text: DEFAULT_SHARE_TEXT,
-            url: SITE_URL,
+            text: `${DEFAULT_SHARE_TEXT}\n${SITE_URL}`,
           })
           return
         } catch (shareError) {
