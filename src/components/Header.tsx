@@ -17,22 +17,34 @@ export function Header({ onResetAll }: HeaderProps) {
   return (
     <>
       <header className="border-b border-[#F0ECF5] bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:px-6">
-          <h1 className="text-lg font-bold tracking-tight text-[#262230] sm:text-xl">
-            オタク年表メーカー
-          </h1>
-          <div className="flex flex-shrink-0 items-center gap-3">
-            <p className="hidden text-sm text-[#8D869B] sm:block">
-              ハマってきたものを年表画像に
-            </p>
-            <button
-              type="button"
-              onClick={() => setConfirmOpen(true)}
-              className="text-xs text-[#B9B2C7] transition hover:text-[#E4738A]"
-            >
-              全部消す
-            </button>
+        <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-lg font-bold tracking-tight text-[#262230] sm:text-xl">
+              オタク年表メーカー
+            </h1>
+            <div className="flex flex-shrink-0 items-center gap-3">
+              <p className="hidden text-sm text-[#8D869B] sm:block">
+                ハマってきたものを年表画像に
+              </p>
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(true)}
+                className="text-xs text-[#B9B2C7] transition hover:text-[#E4738A]"
+              >
+                全部消す
+              </button>
+            </div>
           </div>
+          {/*
+            タグライン（何をするアプリかの一言説明）。PC以降は上の行に
+            インラインで表示しているため、ここでは重複しないようスマホ時のみ
+            2行目のサブタイトルとして表示する。スマホは「入力」タブが
+            デフォルト表示で、タグラインがないとアプリの目的が伝わらない
+            まま入力欄だけが並ぶ状態になってしまうため。
+          */}
+          <p className="mt-0.5 text-xs text-[#8D869B] sm:hidden">
+            ハマってきたものを年表画像に
+          </p>
         </div>
       </header>
 
