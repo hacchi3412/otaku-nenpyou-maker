@@ -92,6 +92,29 @@ export function PreviewPanel({
         </div>
       </ScaledCanvas>
 
+      {/*
+        「初回訪問時、何が作れるのか分からない」というユーザーテストの声を受けて、
+        まだ何も入力していない間だけ完成イメージのサンプル画像を表示する。
+        exportTargetRefの外に置いているのは、書き出し対象の中に入れると
+        ダミーのサンプル画像ごとユーザー自身の書き出し画像に含まれてしまうため
+        （見出しの名前入力欄を外に置いているのと同じ理由）。
+        入力を始めてvisibleYearsが1件でもできた時点で自動的に引っ込むため、
+        常時表示のヘッダー画像等と違い恒久的な場所の占有にはならない。
+        既にOGP用に用意済みのpublic/ogp.pngをそのまま流用している。
+      */}
+      {visibleYears.length === 0 && (
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <p className="font-kaku text-xs text-[#A79FC2]">
+            こんな年表が作れます（サンプル）
+          </p>
+          <img
+            src={`${import.meta.env.BASE_URL}ogp.png`}
+            alt="サンプルの年表画像。2023年から2026年にかけて、推しアニメ・推し武道・ソシャゲ・アイドル・舞台版など、年ごとに色分けされたジャンルとコメントが並んでいる"
+            className="w-full max-w-md rounded-lg border border-[#E5E0EE] shadow-sm"
+          />
+        </div>
+      )}
+
       <ShareButtons
         exportTargetRef={exportTargetRef}
         displayName={displayName}
