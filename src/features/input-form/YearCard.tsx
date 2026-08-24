@@ -17,7 +17,14 @@ interface YearCardProps {
    * 上から順に埋めていく入力順でも常に入力済みの内容を候補にできる。
    */
   nextYearItems: TimelineItem[]
+  /** 「年を移動」の選択肢に使う、全カード共通の年一覧 */
+  allYears: number[]
   onChange: (items: TimelineItem[]) => void
+  /**
+   * 項目を別の年へ移動する。成功時true、移動先が上限（3件）に達していて
+   * 失敗した場合falseを返す。
+   */
+  onMoveItem: (fromYear: number, item: TimelineItem, toYear: number) => boolean
 }
 
 /**
@@ -30,8 +37,11 @@ export function YearCard({
   items,
   previousYearItems,
   nextYearItems,
+  allYears,
   onChange,
+  onMoveItem,
 }: YearCardProps) {
+  const availableYears = allYears.filter((y) => y !== year)
   const canAddMore = items.length < MAX_ITEMS_PER_YEAR
 
   // ドラフト枠がある間だけ、まだ未入力の前年・翌年項目を引き継ぎ候補として出す。
@@ -102,6 +112,10 @@ export function YearCard({
                 item && updateItem(item.id, { comment: value })
               }
               onColorChange={(color) => item && updateItem(item.id, { color })}
+              availableYears={availableYears}
+              onMove={(toYear) =>
+                item ? onMoveItem(year, item, toYear) : false
+              }
               onDelete={() => item && removeItem(item.id)}
             />
           )
