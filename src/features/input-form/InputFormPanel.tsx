@@ -38,6 +38,30 @@ export function InputFormPanel({
     return newItem.id
   }
 
+  // 「年を移動」：間違えた年に入力してしまった項目を、消して打ち直すことなく
+  // 別の年へ動かせるようにする（詳細は7章参照）。移動元からの削除・移動先への
+  // 追加はどちらもonChangeYearItemsを通すため、同名項目のコメント・カラー
+  // 自動同期（3.6）もそのまま適用される。
+  const handleMoveItem = (
+    fromYear: number,
+    item: TimelineItem,
+    toYear: number,
+  ): boolean => {
+    const fromEntry = years.find((y) => y.year === fromYear)
+    const toEntry = years.find((y) => y.year === toYear)
+    if (!fromEntry || !toEntry) return false
+    if (toEntry.items.length >= MAX_ITEMS_PER_YEAR) return false
+
+    onChangeYearItems(
+      fromYear,
+      fromEntry.items.filter((i) => i.id !== item.id),
+    )
+    onChangeYearItems(toYear, [...toEntry.items, item])
+    return true
+  }
+
+  const allYears = years.map((y) => y.year)
+
   return (
     <div className="flex flex-col gap-3">
       <QuickAddCard years={years} onAdd={handleQuickAdd} />
@@ -53,7 +77,9 @@ export function InputFormPanel({
             items={entry.items}
             previousYearItems={previousYear?.items ?? []}
             nextYearItems={nextYear?.items ?? []}
+            allYears={allYears}
             onChange={(items) => onChangeYearItems(entry.year, items)}
+            onMoveItem={handleMoveItem}
           />
         )
       })}
