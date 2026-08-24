@@ -19,6 +19,12 @@ interface PreviewPanelProps {
   /** 見出し・シェア文言に使う表示名（空文字なら「わたし」表示） */
   displayName: string
   onDisplayNameChange: (value: string) => void
+  /**
+   * プレビュー上のブロックをタップした項目のIDを渡して呼ばれる。
+   * 「プレビューで気づいて直したいのに、入力フォームへ戻るのが面倒」という
+   * 声を受けたジャンプ機能用（詳細は7章参照）。
+   */
+  onEditItem: (itemId: string) => void
 }
 
 /**
@@ -36,6 +42,7 @@ export function PreviewPanel({
   years,
   displayName,
   onDisplayNameChange,
+  onEditItem,
 }: PreviewPanelProps) {
   const exportTargetRef = useRef<HTMLDivElement>(null)
 
@@ -79,7 +86,11 @@ export function PreviewPanel({
             {headingOwner}の<span className="text-[#E8899F]">オタク年表</span>
           </h2>
 
-          <TimelineChart years={years} laneCount={laneCount} />
+          <TimelineChart
+            years={years}
+            laneCount={laneCount}
+            onItemClick={onEditItem}
+          />
 
           <div
             className="mt-4 flex justify-end pt-[14px]"

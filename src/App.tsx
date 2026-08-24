@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Footer } from './components/Footer'
 import { Header } from './components/Header'
 import { TutorialOverlay } from './components/TutorialOverlay'
@@ -32,6 +32,36 @@ function App() {
   const [tutorialStep, setTutorialStep] = useState<TutorialStep>(1)
   const inputSectionRef = useRef<HTMLElement>(null)
   const previewSectionRef = useRef<HTMLElement>(null)
+
+  // プレビュー上のブロックをタップした項目のコメント欄へジャンプする機能。
+  // 「プレビューを見て直したい箇所に気づいても、入力フォームへ戻って該当欄を
+  // 探すのが面倒」という声を受けたもの（詳細は7章参照）。
+  // 入力タブへの切り替えとスクロール＋フォーカスを同じイベントハンドラ内で
+  // 行うと、切り替え直後はまだ対象要素がhidden（display:none）のままなので
+  // 見つからない。setMobileTabとjumpRequestの更新は同じレンダーに含まれ、
+  // useEffectはDOM更新後に実行されるため、ここでの検索は確実にタブ切り替え
+  // 後の表示状態に対して行われる。
+  // tokenを毎回変えているのは、同じ項目を連続でタップしてもオブジェクトの
+  // 参照が変わり、確実にuseEffectが再実行されるようにするため（stateを
+  // 使い終わった後にnullへ戻すような、effect内でのsetStateは避けている）。
+  const [jumpRequest, setJumpRequest] = useState<{
+    itemId: string
+    token: number
+  } | null>(null)
+
+  useEffect(() => {
+    if (!jumpRequest) return
+    const target = document.querySelector<HTMLElement>(
+      `[data-comment-for="${jumpRequest.itemId}"]`,
+    )
+    target?.focus({ preventScroll: true })
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [jumpRequest])
+
+  const handleEditItemFromPreview = (itemId: string) => {
+    setMobileTab('input')
+    setJumpRequest({ itemId, token: Date.now() })
+  }
 
   const closeTutorial = () => setTutorialSeen(true)
   const advanceTutorial = () => {
@@ -97,6 +127,7 @@ function App() {
               years={years}
               displayName={displayName}
               onDisplayNameChange={setDisplayName}
+              onEditItem={handleEditItemFromPreview}
             />
           </section>
         </div>
