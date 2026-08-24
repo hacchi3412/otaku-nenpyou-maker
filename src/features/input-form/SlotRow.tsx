@@ -23,6 +23,11 @@ interface SlotRowProps {
  * 入力が始まるとコメント・カラー・削除ボタンが現れる。
  * コメントは長めの文章でも入力中に先頭が見えなくなったり上限文字数が
  * わかりにくかったりしないよう、2行のtextarea＋文字数カウンター表示にしている。
+ *
+ * コメント・カラーともに「何を書けば／選べばいいのか分からない」という
+ * ユーザーテストの声を受け、プレースホルダーに実例を、カラーには
+ * スウォッチの意味（同じ名前の項目は自動で揃う。タップで自由に変更可）を
+ * 一言添えている（詳細は7章参照）。
  */
 export function SlotRow({
   item,
@@ -66,7 +71,7 @@ export function SlotRow({
               value={item.comment}
               onChange={(e) => onCommentChange(e.target.value)}
               maxLength={COMMENT_MAX_LENGTH}
-              placeholder="一言コメント（任意）"
+              placeholder={'一言コメント（任意）\n例：沼落ちした'}
               rows={2}
               className="w-full resize-none rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-xs text-[#6B6375] outline-none focus:border-[#BFB4D6]"
             />
@@ -75,23 +80,33 @@ export function SlotRow({
             </p>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1.5">
-              {SWATCH_COLORS.map((swatch) => (
-                <button
-                  key={swatch.bg}
-                  type="button"
-                  aria-label={`カラー ${swatch.bg}`}
-                  aria-pressed={item.color === swatch.bg}
-                  onClick={() => onColorChange(swatch.bg)}
-                  style={{ backgroundColor: swatch.bg }}
-                  className={`h-6 w-6 rounded-full border-2 transition ${
-                    item.color === swatch.bg
-                      ? 'border-[#262230]'
-                      : 'border-transparent hover:border-[#D8D2E4]'
-                  }`}
-                />
-              ))}
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              {/*
+                「これは何？」という戸惑いへの対応。同じ名前の項目は自動で色が
+                揃う仕組み（3.6参照）自体がスウォッチの存在理由でもあるため、
+                タップで自由に変更できることとあわせて一言で説明する。
+              */}
+              <p className="mb-1 text-xs text-[#8D869B]">
+                カラー（同じ名前の項目は自動で揃います）
+              </p>
+              <div className="flex gap-1.5">
+                {SWATCH_COLORS.map((swatch) => (
+                  <button
+                    key={swatch.bg}
+                    type="button"
+                    aria-label={`カラー ${swatch.bg}`}
+                    aria-pressed={item.color === swatch.bg}
+                    onClick={() => onColorChange(swatch.bg)}
+                    style={{ backgroundColor: swatch.bg }}
+                    className={`h-6 w-6 rounded-full border-2 transition ${
+                      item.color === swatch.bg
+                        ? 'border-[#262230]'
+                        : 'border-transparent hover:border-[#D8D2E4]'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
             <button
               type="button"
