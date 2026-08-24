@@ -1,4 +1,7 @@
+import { MAX_ITEMS_PER_YEAR } from '../../constants/timeline'
 import type { TimelineItem, YearEntry } from '../../types/timeline'
+import { pickRandomColor } from '../../utils/color'
+import { QuickAddCard } from './QuickAddCard'
 import { YearCard } from './YearCard'
 
 interface InputFormPanelProps {
@@ -9,14 +12,35 @@ interface InputFormPanelProps {
 
 /**
  * 年ごとの入力カード一覧（新しい年が上）。
+ * 一番上にはクイック入力欄（QuickAddCard）を常設し、年カードを順に埋める
+ * 通常のフローとは別に、思い出した順で「何に・いつハマったか」だけを
+ * 素早く書き留められるようにしている（詳細は7章参照）。
  */
 export function InputFormPanel({
   years,
   onChangeYearItems,
   onAddPastYears,
 }: InputFormPanelProps) {
+  // クイック入力からの追加。新規項目の色・コメントの引き継ぎ判定（同じ
+  // タイトルが他の年に既にあれば自動で揃える）はuseTimelineData側の
+  // updateYearItemsが担うため、ここでは素の新規項目を積むだけでよい。
+  const handleQuickAdd = (year: number, title: string): string | null => {
+    const entry = years.find((y) => y.year === year)
+    if (!entry || entry.items.length >= MAX_ITEMS_PER_YEAR) return null
+
+    const newItem: TimelineItem = {
+      id: crypto.randomUUID(),
+      title,
+      comment: '',
+      color: pickRandomColor(),
+    }
+    onChangeYearItems(year, [...entry.items, newItem])
+    return newItem.id
+  }
+
   return (
     <div className="flex flex-col gap-3">
+      <QuickAddCard years={years} onAdd={handleQuickAdd} />
       {[...years].reverse().map((entry) => {
         // 上から新しい年順・下から古い年順のどちらで埋めても引き継ぎ候補が出るよう、
         // 前年（1つ下のカード）・翌年（1つ上のカード）の両方を参照する
