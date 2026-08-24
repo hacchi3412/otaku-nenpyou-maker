@@ -3,7 +3,7 @@ import { EXPORT_PIXEL_RATIO } from '../constants/share'
 
 // 年表の見出し・コメント等はGoogle Fonts（Zen Maru Gothic / Zen Kaku Gothic New）を
 // 使っており、書き出し時はhtml-to-imageがフォントファイルをbase64化してSVGに埋め込む。
-// ここが「保存」「Xでシェア」の体感速度の大部分を占めている：
+// ここが「保存」「シェア」の体感速度の大部分を占めている：
 // html-to-imageは@font-faceをfont-family名だけでマッチさせ、unicode-range（実際に
 // 使われている文字か）は見ない。Google FontsはCJK対応のため1書体を数百のunicode-range
 // サブセットファイルに分割して配信しており、実測ではこの2書体だけで729ファイル分の
@@ -28,7 +28,7 @@ function loadFontEmbedCSS(node: HTMLElement): Promise<string> {
 
 /**
  * 書き出しで使うWebフォントCSSを先読みしておく。
- * 「保存」「Xでシェア」ボタンが押されるより前（プレビュー表示時）に呼んでおくことで、
+ * 「保存」「シェア」ボタンが押されるより前（プレビュー表示時）に呼んでおくことで、
  * 実際にボタンが押された時点ではキャッシュ済みの状態にし、待ち時間を無くす。
  * 失敗しても無視してよい（exportNodeAsPngBlob側でフォールバックする）。
  */
