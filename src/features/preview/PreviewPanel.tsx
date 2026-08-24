@@ -109,7 +109,7 @@ export function PreviewPanel({
           </p>
           <img
             src={`${import.meta.env.BASE_URL}ogp.png`}
-            alt="サンプルの年表画像。2023年から2026年にかけて、推しアニメ・推し武道・ソシャゲ・アイドル・舞台版など、年ごとに色分けされたジャンルとコメントが並んでいる"
+            alt="サンプルの年表画像。2023年から2026年にかけて、アニメA・ストリーマーD・ソシャゲB・アイドルC・Jリーグなど、年ごとに色分けされたブロックとコメントが並んでいる"
             className="w-full max-w-md rounded-lg border border-[#E5E0EE] shadow-sm"
           />
         </div>

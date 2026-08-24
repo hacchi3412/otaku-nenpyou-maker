@@ -111,7 +111,7 @@ function App() {
             step={1}
             totalSteps={2}
             title="ここから年表を作ろう"
-            description="ハマってきた作品や趣味を、年ごとに入力してみましょう。ジャンル名を入力するだけでOKです。"
+            description="ハマってきたものを、年ごとに入力してみましょう。作品でも、キャラでも、ジャンルでも自由です。"
             nextLabel="次へ"
             onNext={advanceTutorial}
             onClose={closeTutorial}

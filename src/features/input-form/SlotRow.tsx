@@ -19,7 +19,7 @@ interface SlotRowProps {
 
 /**
  * 1項目分の入力欄。
- * itemが未定義の間はジャンル名入力のみのドラフト枠として表示し、
+ * itemが未定義の間は「ハマったもの」入力のみのドラフト枠として表示し、
  * 入力が始まるとコメント・カラー・削除ボタンが現れる。
  * コメントは長めの文章でも入力中に先頭が見えなくなったり上限文字数が
  * わかりにくかったりしないよう、2行のtextarea＋文字数カウンター表示にしている。
@@ -55,7 +55,7 @@ export function SlotRow({
         value={item?.title ?? ''}
         onChange={(e) => onTitleChange(e.target.value)}
         maxLength={TITLE_MAX_LENGTH}
-        placeholder="ジャンル名を入力（15文字まで）"
+        placeholder="ハマったものを入力（20文字まで）"
         className="w-full rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
       />
 
