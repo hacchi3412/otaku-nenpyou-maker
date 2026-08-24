@@ -73,6 +73,9 @@ export function SlotRow({
               maxLength={COMMENT_MAX_LENGTH}
               placeholder={'一言コメント（任意）\n例：沼落ちした'}
               rows={2}
+              // QuickAddCardから「コメント・色を編集」で飛んでこられるよう、
+              // 項目IDをマークしておく（詳細はQuickAddCardのコメント参照）
+              data-comment-for={item.id}
               className="w-full resize-none rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-xs text-[#6B6375] outline-none focus:border-[#BFB4D6]"
             />
             <p className="mt-0.5 text-right text-[10px] text-[#B9B2C7]">
