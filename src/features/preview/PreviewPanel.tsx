@@ -50,6 +50,8 @@ export function PreviewPanel({
   const laneCount = getUsedLaneCount(computeLaneSegments(visibleYears))
   const chartWidth = getChartWidth(laneCount)
   const headingOwner = displayName.trim() || DEFAULT_DISPLAY_NAME
+  // 保存・シェアのGA4計測用。全年合計の項目数（詳細は7章参照）
+  const itemCount = years.reduce((sum, entry) => sum + entry.items.length, 0)
 
   return (
     <div>
@@ -129,6 +131,7 @@ export function PreviewPanel({
       <ShareButtons
         exportTargetRef={exportTargetRef}
         displayName={displayName}
+        itemCount={itemCount}
       />
     </div>
   )

@@ -4,6 +4,7 @@ import {
   EXPORT_FILE_NAME,
   SITE_URL,
 } from '../../constants/share'
+import { trackEvent } from '../../utils/analytics'
 import {
   downloadBlob,
   exportNodeAsPngBlob,
@@ -16,6 +17,13 @@ interface ShareButtonsProps {
   exportTargetRef: RefObject<HTMLElement | null>
   /** シェア文言に使う表示名（空文字なら「わたし」表示）。見出しと同じ値を使う */
   displayName: string
+  /**
+   * 保存・シェア時点で年表に入っている項目数（全年合計）。
+   * GA4のitem_countパラメータとして送り、「どのくらい入力が進んだ状態で
+   * 保存・シェアされているか」を見られるようにするためだけに使う
+   * （詳細は7章参照）。
+   */
+  itemCount: number
 }
 
 type Status = 'idle' | 'saving' | 'sharing'
@@ -32,10 +40,16 @@ const PC_FALLBACK_HINT =
  *   まとめて渡す（宛先はX限定ではなくユーザーが選択）。非対応環境（主にPC）では
  *   従来通り、画像を先にダウンロードしてからXの投稿画面を新規タブで開く方式に
  *   フォールバックする（詳細は7章参照）
+ *
+ * 保存・シェアが実際に完了した時点（クリックした時点ではない。キャンセル・
+ * 失敗した操作まで計測しないため）で、GA4へimage_save／shareイベントを送る。
+ * どちらの方式で完了したか（method）と、その時点の項目数（item_count）を
+ * パラメータとして付与する（詳細は7章参照）。
  */
 export function ShareButtons({
   exportTargetRef,
   displayName,
+  itemCount,
 }: ShareButtonsProps) {
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState<string | null>(null)
@@ -94,6 +108,14 @@ export function ShareButtons({
       if (!saved) {
         downloadBlob(blob, EXPORT_FILE_NAME)
       }
+
+      // ここまで到達するのは、共有シート経由（saved=true）／直接ダウンロード
+      // （saved=false）のどちらかで保存が完了した場合のみ（キャンセル時は
+      // 上のAbortErrorの分岐でreturnしており、ここには来ない）
+      trackEvent('image_save', {
+        method: saved ? 'share_sheet' : 'download',
+        item_count: itemCount,
+      })
     } catch (error) {
       console.error(error)
       setMessage('画像の保存に失敗しました。もう一度お試しください。')
@@ -128,6 +150,7 @@ export function ShareButtons({
             files: [file],
             text: `${buildShareCaption(displayName)}\n${SITE_URL}`,
           })
+          trackEvent('share', { method: 'web_share', item_count: itemCount })
           return
         } catch (shareError) {
           if (
@@ -162,6 +185,7 @@ export function ShareButtons({
 
       const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(buildShareCaption(displayName))}&url=${encodeURIComponent(SITE_URL)}`
       window.open(intentUrl, '_blank', 'noopener,noreferrer')
+      trackEvent('share', { method: 'twitter_intent', item_count: itemCount })
 
       setMessage(
         '画像をダウンロードしました。投稿画面を開いたので、投稿欄に添付してください。',
