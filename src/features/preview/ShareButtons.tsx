@@ -10,7 +10,7 @@ import {
   exportNodeAsPngBlob,
   prefetchFontEmbedCSS,
 } from '../../utils/exportImage'
-import { canShareFiles, isIOS } from '../../utils/platform'
+import { canShareFiles, isIOS, isMobileDevice } from '../../utils/platform'
 
 interface ShareButtonsProps {
   /** 画像として書き出す対象（幅固定の年表本体）への参照 */
@@ -29,17 +29,20 @@ interface ShareButtonsProps {
 type Status = 'idle' | 'saving' | 'sharing'
 
 const PC_FALLBACK_HINT =
-  '「Xでシェア」は画像がダウンロードされ、投稿画面が開きます。投稿欄に添付してください'
+  '「Xに投稿する」は画像がダウンロードされ、投稿画面が開きます。投稿欄に添付してください'
 
 /**
  * 「画像として保存」「シェア」ボタン。
  * サーバーを使わず完結させるため、
  * - 保存: iOSでは共有シート（画像保存がワンタップで並ぶ）、それ以外は直接ダウンロード
- * - シェア: OSの共有シートに画像ファイルを渡せる環境（主にスマホ）では
+ * - シェア: モバイル端末でOSの共有シートに画像ファイルを渡せる場合は、
  *   navigator.share()でOS標準の共有シートを開き、画像・キャプション・URLを
- *   まとめて渡す（宛先はX限定ではなくユーザーが選択）。非対応環境（主にPC）では
- *   従来通り、画像を先にダウンロードしてからXの投稿画面を新規タブで開く方式に
- *   フォールバックする（詳細は7章参照）
+ *   まとめて渡す（宛先はX限定ではなくユーザーが選択）。PC（デスクトップ）では、
+ *   navigator.share()自体が使える環境が増えてきているが、PCのOS標準共有シート
+ *   にはそもそもX（Twitter）が登録されていないことが多く、「シェアしたのに
+ *   Xが選べない」という実機報告があった。そのためPCでは機能の有無に関わらず
+ *   常に、画像を先にダウンロードしてからXの投稿画面を新規タブで開く方式
+ *   （ボタン名は「Xに投稿する」）を使う（詳細は7章参照）
  *
  * 保存・シェアが実際に完了した時点（クリックした時点ではない。キャンセル・
  * 失敗した操作まで計測しないため）で、GA4へimage_save／shareイベントを送る。
@@ -53,11 +56,16 @@ export function ShareButtons({
 }: ShareButtonsProps) {
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState<string | null>(null)
-  // 共有シートに画像を渡せるかどうかは実行環境（主にOS・ブラウザ）で決まり、
-  // セッション中に変わることはないため、初回レンダー時に一度だけ判定する
-  const [shareFilesSupported] = useState(canShareFiles)
+  // 共有シート経由にするかどうかは、実行環境（主にOS・ブラウザ）で決まり
+  // セッション中に変わることはないため、初回レンダー時に一度だけ判定する。
+  // canShareFiles()（画像ファイルを渡せるかの機能検出）だけでなく
+  // isMobileDevice()も合わせて見ているのは、PCのOS共有シートにXが
+  // 登録されていないことが多いため（詳細はisMobileDeviceのコメント・7章参照）
+  const [shouldUseShareSheet] = useState(
+    () => canShareFiles() && isMobileDevice(),
+  )
 
-  // 「保存」「Xでシェア」を押した瞬間にフォント埋め込み用CSSの取得（数百リクエスト
+  // 「保存」「シェア」を押した瞬間にフォント埋め込み用CSSの取得（数百リクエスト
   // 規模になりうる重い処理。詳細はexportImage.tsのコメント参照）が走ると体感が
   // 遅くなるため、プレビューが表示されている間に先読みしておく。
   useEffect(() => {
@@ -132,10 +140,12 @@ export function ShareButtons({
     try {
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
 
-      if (shareFilesSupported) {
+      if (shouldUseShareSheet) {
         // OS標準の共有シートに画像・キャプション・URLをまとめて渡す。
         // 添付は共有シート側で自動的に行われるため、手動添付の案内は不要。
-        // 宛先はユーザーが共有シートから選ぶため、Xとは限らない。
+        // 宛先はユーザーが共有シートから選ぶため、Xとは限らない
+        // （モバイル端末限定の分岐。PCではisMobileDevice()がfalseになるため
+        // shouldUseShareSheetがtrueにならず、ここには入らない）。
         //
         // urlは独立したフィールドとして渡さず、textに直接埋め込んでいる。
         // filesと一緒にurlを渡すと、iOS（WebKit）+ Xの組み合わせで実機検証した際に
@@ -168,7 +178,7 @@ export function ShareButtons({
         }
       }
 
-      // 非対応環境（主にPC）向けのフォールバック。
+      // PC（および共有シート非対応環境）向けのフォールバック。
       // 画像のダウンロードを終えてから投稿画面を開く順序にしている。
       // スマホでXのintent URLへ遷移すると、多くの場合ネイティブのXアプリへ
       // 丸ごと切り替わる（ブラウザがバックグラウンドになる）。この切り替えが
@@ -219,20 +229,21 @@ export function ShareButtons({
         >
           {status === 'sharing'
             ? '準備中…'
-            : shareFilesSupported
+            : shouldUseShareSheet
               ? 'シェア'
-              : 'Xでシェア'}
+              : 'Xに投稿する'}
         </button>
       </div>
       {/*
-        非対応環境（主にPC）向けのフォールバックは、画像をダウンロードしてから
-        投稿画面を開くだけで、投稿欄への添付は自動化されない。初見だと
-        気づきにくいため、クリックする前から常にヒントを出しておく。
-        共有シートに委ねられる環境では、添付が自動で行われ宛先もXに限らないため
-        このヒントは不要（共有シート自体が説明不要なUIのため）。
-        シェア操作直後にエラー等が起きた場合は、結果に応じたメッセージに差し替える。
+        PC（および共有シート非対応環境）向けのフォールバックは、画像を
+        ダウンロードしてから投稿画面を開くだけで、投稿欄への添付は自動化
+        されない。初見だと気づきにくいため、クリックする前から常にヒントを
+        出しておく。共有シートに委ねられる環境では、添付が自動で行われ
+        宛先もXに限らないためこのヒントは不要（共有シート自体が説明不要な
+        UIのため）。シェア操作直後にエラー等が起きた場合は、結果に応じた
+        メッセージに差し替える。
       */}
-      {(message ?? (shareFilesSupported ? null : PC_FALLBACK_HINT)) && (
+      {(message ?? (shouldUseShareSheet ? null : PC_FALLBACK_HINT)) && (
         <p className="max-w-xs text-center text-xs text-[#8D869B]">
           {message ?? PC_FALLBACK_HINT}
         </p>
