@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react'
 import type { YearEntry } from '../../types/timeline'
 import { getSwatchTextColor } from '../../utils/color'
 import {
@@ -13,6 +14,13 @@ interface TimelineChartProps {
   years: YearEntry[]
   /** 実際に使われているレーン数（getUsedLaneCountの戻り値）。グリッドの列数に使う */
   laneCount: number
+  /**
+   * ブロックをタップ／クリックしたときに、その項目のIDを渡して呼ばれる。
+   * 「プレビューで気づいて直したいのに、入力フォームへ戻るのが面倒」という
+   * 声を受け、タップした項目の入力欄（コメント欄）へジャンプする用途を想定
+   * している（詳細は7章参照）。渡さなければブロックはただの表示のまま。
+   */
+  onItemClick?: (itemId: string) => void
 }
 
 /**
@@ -23,7 +31,11 @@ interface TimelineChartProps {
  * これにより、使用レーン数が少ないときにカード全体の横幅も自動的に狭まる
  * （PreviewPanel側でgetChartWidth(laneCount)を使って外枠の幅を合わせている）。
  */
-export function TimelineChart({ years, laneCount }: TimelineChartProps) {
+export function TimelineChart({
+  years,
+  laneCount,
+  onItemClick,
+}: TimelineChartProps) {
   const visibleYears = getVisibleYears(years)
 
   if (visibleYears.length === 0) {
@@ -89,7 +101,7 @@ export function TimelineChart({ years, laneCount }: TimelineChartProps) {
       {segments.map((segment) => (
         <div
           key={`${segment.lane}-${segment.startIndex}-${segment.item.id}`}
-          className="flex flex-col items-start gap-[3px] overflow-hidden rounded-[3px] px-3 py-2"
+          className={`flex flex-col items-start gap-[3px] overflow-hidden rounded-[3px] px-3 py-2 ${onItemClick ? 'cursor-pointer transition hover:brightness-95 active:brightness-90' : ''}`}
           style={{
             gridColumn: segment.lane + 2,
             gridRow: `${segment.startIndex + 1} / span ${segment.length}`,
@@ -98,6 +110,20 @@ export function TimelineChart({ years, laneCount }: TimelineChartProps) {
             backgroundColor: segment.item.color,
             color: getSwatchTextColor(segment.item.color),
           }}
+          {...(onItemClick
+            ? {
+                role: 'button',
+                tabIndex: 0,
+                'aria-label': `${segment.item.title}を編集`,
+                onClick: () => onItemClick(segment.item.id),
+                onKeyDown: (e: KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onItemClick(segment.item.id)
+                  }
+                },
+              }
+            : {})}
         >
           <p className="font-kaku w-full text-left text-[13px] leading-[1.3] font-bold break-words">
             {segment.item.title}
