@@ -1,7 +1,7 @@
 const CONTACT_FORM_URL = 'https://forms.gle/4EAH1x4iTjWxjh6z9'
 
 const linkClassName =
-  'text-[#6B6375] underline decoration-[#D8D2E4] underline-offset-2 transition hover:text-[#262230]'
+  'text-[#6B5D4C] underline decoration-[#D8C7A0] underline-offset-2 transition hover:text-[#2B2420]'
 
 /**
  * ページ最下部のフッター。
@@ -12,8 +12,8 @@ const linkClassName =
  */
 export function Footer() {
   return (
-    <footer className="border-t border-[#F0ECF5] px-4 py-6 text-center sm:px-6">
-      <p className="text-xs text-[#8D869B]">
+    <footer className="border-t border-[#E8DFC9] px-4 py-6 text-center sm:px-6">
+      <p className="text-xs text-[#9C8F79]">
         ご意見・不具合のご報告は
         <a
           href={CONTACT_FORM_URL}
@@ -25,7 +25,7 @@ export function Footer() {
         </a>
         まで
       </p>
-      <p className="mt-1 text-xs text-[#8D869B]">
+      <p className="mt-1 text-xs text-[#9C8F79]">
         <a href="privacy.html" className={linkClassName}>
           プライバシーポリシー
         </a>

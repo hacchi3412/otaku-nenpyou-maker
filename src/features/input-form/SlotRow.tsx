@@ -62,7 +62,7 @@ export function SlotRow({
     }
   }
   return (
-    <div className="rounded-xl border border-[#F0ECF5] bg-[#FAF8FC] p-3">
+    <div className="rounded-xl border border-[#E8DFC9] bg-[#F6EFE0] p-3">
       {continuationChips.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1.5">
           {continuationChips.map(({ item: chip, source }) => (
@@ -70,7 +70,7 @@ export function SlotRow({
               key={`${source}-${chip.id}`}
               type="button"
               onClick={() => onPickChip(chip)}
-              className="rounded-full border border-[#D8D2E4] bg-white px-2.5 py-1 text-xs text-[#6B6375] transition hover:border-[#BFB4D6] hover:text-[#262230]"
+              className="rounded-full border border-[#D8C7A0] bg-[#FFFCF4] px-2.5 py-1 text-xs text-[#6B5D4C] transition hover:border-[#2B2420] hover:text-[#2B2420]"
             >
               {source === 'previous' ? '昨年から' : '翌年から'}：{chip.title}
             </button>
@@ -84,7 +84,7 @@ export function SlotRow({
         onChange={(e) => onTitleChange(e.target.value)}
         maxLength={TITLE_MAX_LENGTH}
         placeholder="ハマったものを入力（20文字まで）"
-        className="w-full rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+        className="w-full rounded-lg border border-[#DED0AF] bg-[#FFFCF4] px-3 py-2 text-sm text-[#2B2420] outline-none focus:border-[#2B2420]"
       />
 
       {item && (
@@ -99,9 +99,9 @@ export function SlotRow({
               // QuickAddCardから「コメント・色を編集」で飛んでこられるよう、
               // 項目IDをマークしておく（詳細はQuickAddCardのコメント参照）
               data-comment-for={item.id}
-              className="w-full resize-none rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-xs text-[#6B6375] outline-none focus:border-[#BFB4D6]"
+              className="w-full resize-none rounded-lg border border-[#DED0AF] bg-[#FFFCF4] px-3 py-2 text-xs text-[#6B5D4C] outline-none focus:border-[#2B2420]"
             />
-            <p className="mt-0.5 text-right text-[10px] text-[#B9B2C7]">
+            <p className="mt-0.5 text-right text-[10px] text-[#C7BBA4]">
               {item.comment.length}/{COMMENT_MAX_LENGTH}
             </p>
           </div>
@@ -113,7 +113,7 @@ export function SlotRow({
                 揃う仕組み（3.6参照）自体がスウォッチの存在理由でもあるため、
                 タップで自由に変更できることとあわせて一言で説明する。
               */}
-              <p className="mb-1 text-xs text-[#8D869B]">
+              <p className="mb-1 text-xs text-[#9C8F79]">
                 カラー（同じ名前の項目は自動で揃います）
               </p>
               <div className="flex gap-1.5">
@@ -127,8 +127,8 @@ export function SlotRow({
                     style={{ backgroundColor: swatch.bg }}
                     className={`h-6 w-6 rounded-full border-2 transition ${
                       item.color === swatch.bg
-                        ? 'border-[#262230]'
-                        : 'border-transparent hover:border-[#D8D2E4]'
+                        ? 'border-[#2B2420]'
+                        : 'border-transparent hover:border-[#D8C7A0]'
                     }`}
                   />
                 ))}
@@ -143,7 +143,7 @@ export function SlotRow({
                       handleSelectMoveTarget(Number(e.target.value))
                     }
                     aria-label="移動先の年"
-                    className="rounded-lg border border-[#E5E0EE] bg-white px-1.5 py-1 text-xs text-[#262230] outline-none focus:border-[#BFB4D6]"
+                    className="rounded-lg border border-[#DED0AF] bg-[#FFFCF4] px-1.5 py-1 text-xs text-[#2B2420] outline-none focus:border-[#2B2420]"
                   >
                     <option value="" disabled>
                       年を選択
@@ -161,7 +161,7 @@ export function SlotRow({
                       setMoveError(null)
                     }}
                     aria-label="移動をキャンセル"
-                    className="text-xs text-[#B9B2C7] transition hover:text-[#262230]"
+                    className="text-xs text-[#C7BBA4] transition hover:text-[#2B2420]"
                   >
                     ✕
                   </button>
@@ -171,21 +171,21 @@ export function SlotRow({
                   <button
                     type="button"
                     onClick={() => setIsMoving(true)}
-                    className="text-xs text-[#B9B2C7] transition hover:text-[#262230]"
+                    className="text-xs text-[#C7BBA4] transition hover:text-[#2B2420]"
                   >
                     年を移動
                   </button>
                   <button
                     type="button"
                     onClick={onDelete}
-                    className="text-xs text-[#B9B2C7] transition hover:text-[#E4738A]"
+                    className="text-xs text-[#C7BBA4] transition hover:text-[#B23A2E]"
                   >
                     削除
                   </button>
                 </div>
               )}
               {moveError && (
-                <p className="text-[10px] text-[#E4738A]">{moveError}</p>
+                <p className="text-[10px] text-[#B23A2E]">{moveError}</p>
               )}
             </div>
           </div>

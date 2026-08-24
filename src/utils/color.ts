@@ -1,7 +1,7 @@
 import { SWATCH_COLORS } from '../constants/timeline'
 
 /** 年表画像の基調となる、少し柔らかい濃さのインク色（スウォッチにない色のフォールバック用） */
-const INK_FALLBACK_TEXT_COLOR = '#4A4560'
+const INK_FALLBACK_TEXT_COLOR = '#2B2420'
 
 /** スウォッチからランダムに1色選ぶ（新規項目のカラー未指定時のデフォルト） */
 export function pickRandomColor(): string {

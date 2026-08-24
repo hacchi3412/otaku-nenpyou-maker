@@ -32,8 +32,10 @@ interface PreviewPanelProps {
  * カード自体（枠線・角丸）も含めて画像として書き出す対象なので、
  * それらのスタイルはexportTargetRefのdivに直接持たせている。
  *
- * 装飾は引き算方針: 角丸は最小限、影はほぼ使わない、グラデーションなし、
- * 枠線は本当に必要な箇所だけに絞っている。
+ * 装飾は引き算方針: 角丸は最小限、グラデーションなし、影・枠線は
+ * カード外枠の1箇所（台帳・記録物らしい太めのink罫線＋硬めのオフセット影）
+ * に絞り、他は色（塗り・文字色）だけで表現する（お試しのデザイン変更、
+ * 詳細は7章参照）。
  *
  * カード全体の横幅は、実際に使われているレーン数（1〜3）に応じて可変にする。
  * ブロック列が少ないときに右側へ余分な余白ができないようにするため。
@@ -60,7 +62,7 @@ export function PreviewPanel({
         中に置くと入力欄自体が画像として書き出されてしまうため。
       */}
       <div className="mb-3 flex items-center gap-2">
-        <label htmlFor="display-name" className="text-xs text-[#8D869B]">
+        <label htmlFor="display-name" className="text-xs text-[#9C8F79]">
           見出しの名前
         </label>
         <input
@@ -70,7 +72,7 @@ export function PreviewPanel({
           onChange={(e) => onDisplayNameChange(e.target.value)}
           maxLength={DISPLAY_NAME_MAX_LENGTH}
           placeholder={DEFAULT_DISPLAY_NAME}
-          className="w-56 rounded-lg border border-[#E5E0EE] bg-white px-2 py-1 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+          className="w-56 rounded-lg border border-[#DED0AF] bg-[#FFFCF4] px-2 py-1 text-sm text-[#2B2420] outline-none focus:border-[#2B2420]"
         />
       </div>
 
@@ -79,13 +81,16 @@ export function PreviewPanel({
           ref={exportTargetRef}
           className="relative overflow-hidden rounded-[4px] px-7 pt-[30px] pb-[26px]"
           style={{
-            backgroundColor: '#FFFDFB',
-            border: '1px solid #E4DEF0',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+            backgroundColor: '#FFFCF4',
+            // 台帳・記録物らしい主張のある太め罫線に変更（引き算方針自体は
+            // 維持：飾りの線を増やすのではなく、既存の1本の枠線を太くする
+            // だけに留めている）
+            border: '2px solid #2B2420',
+            boxShadow: '4px 4px 0 0 rgba(43, 36, 32, 0.12)',
           }}
         >
-          <h2 className="font-maru mb-5 text-[22px] font-black whitespace-nowrap text-[#4A4560]">
-            {headingOwner}の<span className="text-[#E8899F]">オタク年表</span>
+          <h2 className="font-maru mb-5 text-[22px] font-black whitespace-nowrap text-[#2B2420]">
+            {headingOwner}の<span className="text-[#B23A2E]">オタク年表</span>
           </h2>
 
           <TimelineChart
@@ -96,9 +101,9 @@ export function PreviewPanel({
 
           <div
             className="mt-4 flex justify-end pt-[14px]"
-            style={{ borderTop: '1px solid #E4DEF0' }}
+            style={{ borderTop: '1px solid #E8DFC9' }}
           >
-            <p className="font-kaku text-[10.5px] text-[#A79FC2]">
+            <p className="font-kaku text-[10.5px] text-[#B0A78D]">
               #オタク年表メーカー で作成
             </p>
           </div>
@@ -117,13 +122,13 @@ export function PreviewPanel({
       */}
       {visibleYears.length === 0 && (
         <div className="mt-4 flex flex-col items-center gap-2">
-          <p className="font-kaku text-xs text-[#A79FC2]">
+          <p className="font-kaku text-xs text-[#B0A78D]">
             こんな年表が作れます（サンプル）
           </p>
           <img
             src={`${import.meta.env.BASE_URL}ogp.png`}
             alt="サンプルの年表画像。2023年から2026年にかけて、アニメA・ストリーマーD・ソシャゲB・アイドルC・Jリーグなど、年ごとに色分けされたブロックとコメントが並んでいる"
-            className="w-full max-w-md rounded-lg border border-[#E5E0EE] shadow-sm"
+            className="w-full max-w-md rounded-lg border border-[#DED0AF] shadow-sm"
           />
         </div>
       )}
