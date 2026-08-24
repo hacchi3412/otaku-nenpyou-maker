@@ -77,7 +77,7 @@ export function TutorialOverlay({
           left: rect.left - SPOTLIGHT_PADDING,
           width: rect.width + SPOTLIGHT_PADDING * 2,
           height: rect.height + SPOTLIGHT_PADDING * 2,
-          boxShadow: '0 0 0 9999px rgba(38, 34, 48, 0.68)',
+          boxShadow: '0 0 0 9999px rgba(43, 36, 32, 0.72)',
         }}
       />
 
@@ -91,33 +91,33 @@ export function TutorialOverlay({
         吹き出しは不透明・影付きで前面に出るため視認性は保たれる）。
       */}
       <div
-        className="fixed inset-x-4 bottom-4 z-[101] mx-auto w-[min(320px,calc(100vw-32px))] rounded-2xl bg-white p-4 shadow-lg"
+        className="fixed inset-x-4 bottom-4 z-[101] mx-auto w-[min(320px,calc(100vw-32px))] rounded-lg border-2 border-[#2B2420] bg-[#FFFCF4] p-4 shadow-[5px_5px_0_0_rgba(43,36,32,0.25)]"
         role="dialog"
         aria-label={title}
       >
         <div className="flex items-start justify-between gap-2">
-          <p className="text-xs font-medium text-[#A79FC2]">
+          <p className="text-xs font-medium text-[#B0A78D]">
             {step}/{totalSteps}
           </p>
           <button
             type="button"
             onClick={onClose}
             aria-label="チュートリアルを閉じる"
-            className="-mt-1 -mr-1 rounded-full p-1 text-[#B9B2C7] transition hover:bg-[#F0ECF5] hover:text-[#262230]"
+            className="-mt-1 -mr-1 rounded-full p-1 text-[#C7BBA4] transition hover:bg-[#E8DFC9] hover:text-[#2B2420]"
           >
             ✕
           </button>
         </div>
-        <p className="font-maru mt-1 text-sm font-bold text-[#262230]">
+        <p className="font-maru mt-1 text-sm font-bold text-[#2B2420]">
           {title}
         </p>
-        <p className="mt-1 text-xs leading-relaxed text-[#6B6375]">
+        <p className="mt-1 text-xs leading-relaxed text-[#6B5D4C]">
           {description}
         </p>
         <button
           type="button"
           onClick={onNext}
-          className="mt-3 w-full rounded-full bg-[#262230] py-2 text-sm font-medium text-white transition hover:bg-[#3A3448]"
+          className="mt-3 w-full rounded-md border-2 border-[#2B2420] bg-[#2B2420] py-2 text-sm font-bold text-[#FFFCF4] shadow-[3px_3px_0_0_#B23A2E] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_#B23A2E]"
         >
           {nextLabel}
         </button>

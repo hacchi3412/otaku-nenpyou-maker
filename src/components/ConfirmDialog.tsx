@@ -46,33 +46,29 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-[4px] bg-white p-5"
-        style={{
-          border: '1px solid #E4DEF0',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-        }}
+        className="w-full max-w-sm rounded-lg border-2 border-[#2B2420] bg-[#FFFCF4] p-5 shadow-[5px_5px_0_0_rgba(43,36,32,0.18)]"
       >
         <h2
           id="confirm-dialog-title"
-          className="text-base font-bold text-[#262230]"
+          className="text-base font-bold text-[#2B2420]"
         >
           {title}
         </h2>
         {description && (
-          <p className="mt-2 text-sm text-[#6B6375]">{description}</p>
+          <p className="mt-2 text-sm text-[#6B5D4C]">{description}</p>
         )}
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-full border border-[#D8D2E4] px-4 py-2 text-sm font-medium text-[#262230] transition hover:border-[#BFB4D6]"
+            className="rounded-md border-2 border-[#2B2420] bg-[#FFFCF4] px-4 py-2 text-sm font-bold text-[#2B2420] shadow-[3px_3px_0_0_#2B2420] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_#2B2420]"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-full bg-[#E4738A] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#D65F78]"
+            className="rounded-md border-2 border-[#2B2420] bg-[#B23A2E] px-4 py-2 text-sm font-bold text-white shadow-[3px_3px_0_0_#2B2420] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_#2B2420]"
           >
             {confirmLabel}
           </button>

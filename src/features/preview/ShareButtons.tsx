@@ -217,7 +217,7 @@ export function ShareButtons({
           type="button"
           onClick={handleSave}
           disabled={busy}
-          className="rounded-full bg-[#262230] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#3A3448] disabled:opacity-50"
+          className="rounded-md border-2 border-[#2B2420] bg-[#2B2420] px-4 py-2 text-sm font-bold text-[#FFFCF4] shadow-[3px_3px_0_0_#B23A2E] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_#B23A2E] disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-50 disabled:shadow-[3px_3px_0_0_#B23A2E]"
         >
           {status === 'saving' ? '保存中…' : '画像として保存'}
         </button>
@@ -225,7 +225,7 @@ export function ShareButtons({
           type="button"
           onClick={handleShare}
           disabled={busy}
-          className="rounded-full border border-[#D8D2E4] px-4 py-2 text-sm font-medium text-[#262230] transition hover:border-[#BFB4D6] disabled:opacity-50"
+          className="rounded-md border-2 border-[#2B2420] bg-[#FFFCF4] px-4 py-2 text-sm font-bold text-[#2B2420] shadow-[3px_3px_0_0_#2B2420] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_#2B2420] disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-50 disabled:shadow-[3px_3px_0_0_#2B2420]"
         >
           {status === 'sharing'
             ? '準備中…'
@@ -244,7 +244,7 @@ export function ShareButtons({
         メッセージに差し替える。
       */}
       {(message ?? (shouldUseShareSheet ? null : PC_FALLBACK_HINT)) && (
-        <p className="max-w-xs text-center text-xs text-[#8D869B]">
+        <p className="max-w-xs text-center text-xs text-[#9C8F79]">
           {message ?? PC_FALLBACK_HINT}
         </p>
       )}

@@ -86,7 +86,7 @@ export function InputFormPanel({
       <button
         type="button"
         onClick={onAddPastYears}
-        className="rounded-full border border-dashed border-[#D8D2E4] px-4 py-2 text-sm text-[#8D869B] transition hover:border-[#BFB4D6] hover:text-[#262230]"
+        className="rounded-full border border-dashed border-[#D8C7A0] px-4 py-2 text-sm text-[#9C8F79] transition hover:border-[#2B2420] hover:text-[#2B2420]"
       >
         ＋もっと過去の年を追加する
       </button>

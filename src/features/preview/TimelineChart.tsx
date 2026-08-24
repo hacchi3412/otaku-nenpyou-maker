@@ -41,7 +41,7 @@ export function TimelineChart({
   if (visibleYears.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-1 py-16 text-center">
-        <p className="font-kaku text-sm text-[#A79FC2]">
+        <p className="font-kaku text-sm text-[#B0A78D]">
           年ごとにハマったものやコメントを入力すると
           <br />
           ここに年表が表示されます
@@ -72,7 +72,7 @@ export function TimelineChart({
           marginLeft: 5,
           width: 2,
           background:
-            'repeating-linear-gradient(to bottom, #A79FC2 0 4px, transparent 4px 9px)',
+            'repeating-linear-gradient(to bottom, #B0A78D 0 4px, transparent 4px 9px)',
         }}
       />
 
@@ -89,10 +89,10 @@ export function TimelineChart({
               top: 2,
               width: 7,
               height: 7,
-              backgroundColor: '#A79FC2',
+              backgroundColor: '#B0A78D',
             }}
           />
-          <span className="font-kaku ml-4 text-[12px] font-bold text-[#8D7FA8]">
+          <span className="font-kaku ml-4 text-[12px] font-bold text-[#8A6D4A]">
             {entry.year}
           </span>
         </div>

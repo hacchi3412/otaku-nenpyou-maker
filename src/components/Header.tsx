@@ -16,20 +16,25 @@ export function Header({ onResetAll }: HeaderProps) {
 
   return (
     <>
-      <header className="border-b border-[#F0ECF5] bg-white/80 backdrop-blur">
+      {/*
+        新聞・台帳の見出し（マストヘッド）を思わせる二重罫線。ink色の太い罫線＋
+        少し離れた細い罫線の組み合わせで、単なる薄いborder-bよりも「紙の記録物」
+        らしい主張のある区切りにしている。
+      */}
+      <header className="border-b-4 border-double border-[#2B2420] bg-[#FFFCF4]/90 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between gap-2">
-            <h1 className="text-lg font-bold tracking-tight text-[#262230] sm:text-xl">
+            <h1 className="font-maru text-lg font-black tracking-tight text-[#2B2420] sm:text-xl">
               オタク年表メーカー
             </h1>
             <div className="flex flex-shrink-0 items-center gap-3">
-              <p className="hidden text-sm text-[#8D869B] sm:block">
+              <p className="hidden text-sm text-[#9C8F79] sm:block">
                 ハマってきたものを年表画像に
               </p>
               <button
                 type="button"
                 onClick={() => setConfirmOpen(true)}
-                className="text-xs text-[#B9B2C7] transition hover:text-[#E4738A]"
+                className="text-xs text-[#C7BBA4] transition hover:text-[#B23A2E]"
               >
                 全部消す
               </button>
@@ -42,7 +47,7 @@ export function Header({ onResetAll }: HeaderProps) {
             デフォルト表示で、タグラインがないとアプリの目的が伝わらない
             まま入力欄だけが並ぶ状態になってしまうため。
           */}
-          <p className="mt-0.5 text-xs text-[#8D869B] sm:hidden">
+          <p className="mt-0.5 text-xs text-[#9C8F79] sm:hidden">
             ハマってきたものを年表画像に
           </p>
         </div>

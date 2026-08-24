@@ -81,8 +81,9 @@ export function YearCard({
   const slotCount = canAddMore ? items.length + 1 : items.length
 
   return (
-    <div className="rounded-2xl border border-[#F0ECF5] bg-white p-4 shadow-sm">
-      <span className="inline-flex items-center rounded-full bg-[#262230] px-3 py-1 text-sm font-semibold text-white">
+    <div className="rounded-lg border-2 border-[#2B2420] bg-[#FFFCF4] p-4 shadow-[4px_4px_0_0_rgba(43,36,32,0.14)]">
+      {/* 「年」を台帳のスタンプのように見せる、角丸を抑えた朱色のバッジ */}
+      <span className="font-maru inline-flex items-center rounded-md border-2 border-[#2B2420] bg-[#B23A2E] px-3 py-1 text-sm font-bold text-white">
         {year}
       </span>
 
