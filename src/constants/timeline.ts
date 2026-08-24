@@ -1,8 +1,13 @@
 /** 1年あたりの最大項目数（継続項目も同じ枠でカウントする） */
 export const MAX_ITEMS_PER_YEAR = 3
 
-/** ジャンル名（タイトル）の最大文字数 */
-export const TITLE_MAX_LENGTH = 15
+/**
+ * 「ハマったもの」（タイトル）の最大文字数。
+ * 全角文字＋コメントを組み合わせた最悪ケースでもブロックからはみ出さないことを
+ * 実描画で確認した上で、英字の長いバンド名等（例：UNISON SQUARE GARDEN=20文字）も
+ * 極力そのまま書けるよう15→20に拡張した（詳細は7章参照）
+ */
+export const TITLE_MAX_LENGTH = 20
 
 /** 一言コメントの目安上限文字数 */
 export const COMMENT_MAX_LENGTH = 30

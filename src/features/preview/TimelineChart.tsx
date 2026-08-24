@@ -30,7 +30,7 @@ export function TimelineChart({ years, laneCount }: TimelineChartProps) {
     return (
       <div className="flex flex-col items-center justify-center gap-1 py-16 text-center">
         <p className="font-kaku text-sm text-[#A79FC2]">
-          年ごとにジャンルやコメントを入力すると
+          年ごとにハマったものやコメントを入力すると
           <br />
           ここに年表が表示されます
         </p>
