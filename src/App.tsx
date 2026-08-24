@@ -48,6 +48,18 @@ function App() {
   // から、同じクリックハンドラ内（＝同じユーザー操作の呼び出しスタック内）で
   // 続けてfocus()を呼ぶようにした。これによりタップ操作と地続きの
   // フォーカスとして扱われるようになる。
+  //
+  // さらに、focus()直後のscrollIntoView()は「仮想キーボードが出る前」の
+  // レイアウト（layout viewport）を基準に位置を計算してしまう。iOS Safari
+  // 等は、キーボード表示時にlayout viewport自体は縮小せず、実際に見えている
+  // 範囲（visual viewport）だけが縮小する挙動のため、scrollIntoView()を
+  // 何度呼び直しても計算結果は変わらず、キーボードの下に隠れたままになる
+  // （scrollIntoViewはvisual viewportを考慮しない）。
+  // そこで、visualViewportのresizeイベント（キーボード表示に伴う縮小）を
+  // 検知したら、対象要素の位置と「実際に見えている範囲」の中心とのズレを
+  // 自前で計算し、そのズレの分だけwindow.scrollByで補正する。resizeが
+  // 発火しない環境（PC等、仮想キーボードが出ない場合）のフォールバックとして
+  // タイムアウトも設定し、どちらか早い方で一度だけ補正する。
   const handleEditItemFromPreview = (itemId: string) => {
     flushSync(() => {
       setMobileTab('input')
@@ -57,6 +69,25 @@ function App() {
     )
     target?.focus({ preventScroll: true })
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    let rescrolled = false
+    const rescrollAfterKeyboard = () => {
+      if (rescrolled || !target) return
+      rescrolled = true
+      const viewport = window.visualViewport
+      if (!viewport) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        return
+      }
+      const rect = target.getBoundingClientRect()
+      const rectCenter = rect.top + rect.height / 2
+      const visibleCenter = viewport.offsetTop + viewport.height / 2
+      window.scrollBy({ top: rectCenter - visibleCenter, behavior: 'smooth' })
+    }
+    window.visualViewport?.addEventListener('resize', rescrollAfterKeyboard, {
+      once: true,
+    })
+    window.setTimeout(rescrollAfterKeyboard, 400)
   }
 
   const closeTutorial = () => setTutorialSeen(true)
