@@ -1,5 +1,6 @@
 import { getFontEmbedCSS, toBlob } from 'html-to-image'
 import { EXPORT_PIXEL_RATIO } from '../constants/share'
+import { isIOS } from './platform'
 
 // 年表の見出し・コメント等はGoogle Fonts（Zen Maru Gothic / Zen Kaku Gothic New）を
 // 使っており、書き出し時はhtml-to-imageがフォントファイルをbase64化してSVGに埋め込む。
@@ -26,14 +27,45 @@ function loadFontEmbedCSS(node: HTMLElement): Promise<string> {
   return fontEmbedCSSPromise
 }
 
+// iOS（WebKitエンジン）では、SVGへ埋め込んだ@font-face（base64のdata URI）を
+// <img>経由でCanvasにラスタライズする際、そのページで最初の1回だけ描画結果に
+// 反映されず、フォールバックの標準フォントで焼き込まれてしまう既知の挙動がある
+// （html-to-image・dom-to-imageの両方で報告例があり、フォントに限らず画像が
+// 丸ごと欠落する事例も報告されている。2回目以降の呼び出しは同一ページ内であれば
+// 問題なく反映される）。ここでは実機報告（「保存」を押した時だけフォントが違う
+// ＝そのセッションで最初に書き出しボタンを押した操作だった可能性が高い）を踏まえ、
+// iOSに限り、プレビュー表示中にダミーの書き出しを1回済ませておくことで、
+// ユーザーが実際にボタンを押す時点をこの「1回目」に当たらせないようにする
+// （詳細は7章参照）。
+let iosRenderWarmupPromise: Promise<void> | null = null
+
+function warmUpIOSRendering(node: HTMLElement, fontEmbedCSS: string) {
+  if (!isIOS() || iosRenderWarmupPromise) return
+  iosRenderWarmupPromise = toBlob(node, {
+    pixelRatio: EXPORT_PIXEL_RATIO,
+    backgroundColor: '#ffffff',
+    fontEmbedCSS,
+  })
+    .then(() => undefined)
+    .catch(() => {
+      // 失敗しても実際の書き出し（exportNodeAsPngBlob）には影響しないため、
+      // ここでは無視する。次回のプレフェッチでやり直せるよう空にしておく。
+      iosRenderWarmupPromise = null
+    })
+}
+
 /**
  * 書き出しで使うWebフォントCSSを先読みしておく。
  * 「保存」「シェア」ボタンが押されるより前（プレビュー表示時）に呼んでおくことで、
  * 実際にボタンが押された時点ではキャッシュ済みの状態にし、待ち時間を無くす。
- * 失敗しても無視してよい（exportNodeAsPngBlob側でフォールバックする）。
+ * あわせてiOSでは、上記のレンダリング1回目問題を避けるためのダミー書き出しも
+ * 一度だけ行っておく。いずれも失敗時は無視してよい
+ * （exportNodeAsPngBlob側でフォールバック・実際の書き出しで再試行される）。
  */
 export function prefetchFontEmbedCSS(node: HTMLElement) {
-  loadFontEmbedCSS(node).catch(() => {})
+  loadFontEmbedCSS(node)
+    .then((fontEmbedCSS) => warmUpIOSRendering(node, fontEmbedCSS))
+    .catch(() => {})
 }
 
 /**
