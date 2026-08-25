@@ -65,8 +65,8 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-[#F0ECF5] bg-white p-4 shadow-sm">
-      <span className="inline-flex items-center rounded-full bg-[#F3D9FA] px-2.5 py-1 text-xs font-bold text-[#862E9C]">
+    <div className="rounded-2xl border-2 border-[#262230] bg-white p-4 shadow-[0_4px_12px_rgba(38,34,48,0.08)]">
+      <span className="inline-flex items-center rounded-full border-2 border-[#262230] bg-[#FFDD57] px-2.5 py-1 text-xs font-bold text-[#262230]">
         ⚡ クイック入力
       </span>
       <p className="mt-1.5 text-[11px] leading-relaxed text-[#8D869B]">
@@ -81,7 +81,7 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
             setMessage(null)
           }}
           aria-label="追加する年"
-          className="w-[92px] shrink-0 rounded-lg border border-[#E5E0EE] bg-white px-1.5 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+          className="w-[92px] shrink-0 rounded-xl border-2 border-[#262230] bg-white px-1.5 py-2 text-sm text-[#262230] outline-none focus:ring-4 focus:ring-[#FFAFCE]/50"
         >
           {sortedYears.map((entry) => (
             <option key={entry.year} value={entry.year}>
@@ -101,7 +101,7 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
           }}
           maxLength={TITLE_MAX_LENGTH}
           placeholder="ハマったものを入力（20文字まで）"
-          className="min-w-0 flex-1 rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+          className="min-w-0 flex-1 rounded-xl border-2 border-[#262230] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:ring-4 focus:ring-[#FFAFCE]/50"
         />
       </div>
 
@@ -109,9 +109,9 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
         type="button"
         onClick={handleAdd}
         disabled={!title.trim()}
-        className="mt-2 w-full rounded-full bg-[#262230] py-2 text-sm font-medium text-white transition hover:bg-[#3A3448] disabled:opacity-40"
+        className="mt-2 w-full rounded-full border-2 border-[#262230] bg-[#FFAFCE] py-2 text-sm font-bold text-[#262230] transition hover:bg-[#FF9AC0] disabled:opacity-40"
       >
-        追加
+        ＋ 追加
       </button>
 
       {message && (

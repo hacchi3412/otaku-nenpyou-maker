@@ -91,12 +91,12 @@ export function TutorialOverlay({
         吹き出しは不透明・影付きで前面に出るため視認性は保たれる）。
       */}
       <div
-        className="fixed inset-x-4 bottom-4 z-[101] mx-auto w-[min(320px,calc(100vw-32px))] rounded-2xl bg-white p-4 shadow-lg"
+        className="fixed inset-x-4 bottom-4 z-[101] mx-auto w-[min(320px,calc(100vw-32px))] rounded-2xl border-2 border-[#262230] bg-white p-4 shadow-[0_6px_16px_rgba(38,34,48,0.16)]"
         role="dialog"
         aria-label={title}
       >
         <div className="flex items-start justify-between gap-2">
-          <p className="text-xs font-medium text-[#A79FC2]">
+          <p className="text-xs font-bold text-[#A79FC2]">
             {step}/{totalSteps}
           </p>
           <button
@@ -117,7 +117,7 @@ export function TutorialOverlay({
         <button
           type="button"
           onClick={onNext}
-          className="mt-3 w-full rounded-full bg-[#262230] py-2 text-sm font-medium text-white transition hover:bg-[#3A3448]"
+          className="mt-3 w-full rounded-full border-2 border-[#262230] bg-[#FFAFCE] py-2 text-sm font-bold text-[#262230] transition hover:bg-[#FF9AC0]"
         >
           {nextLabel}
         </button>

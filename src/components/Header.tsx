@@ -16,10 +16,10 @@ export function Header({ onResetAll }: HeaderProps) {
 
   return (
     <>
-      <header className="border-b border-[#F0ECF5] bg-white/80 backdrop-blur">
+      <header className="border-b-2 border-[#262230] bg-white/90 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between gap-2">
-            <h1 className="text-lg font-bold tracking-tight text-[#262230] sm:text-xl">
+            <h1 className="font-maru text-lg font-black tracking-tight text-[#262230] sm:text-xl">
               オタク年表メーカー
             </h1>
             <div className="flex flex-shrink-0 items-center gap-3">
@@ -29,7 +29,7 @@ export function Header({ onResetAll }: HeaderProps) {
               <button
                 type="button"
                 onClick={() => setConfirmOpen(true)}
-                className="text-xs text-[#B9B2C7] transition hover:text-[#E4738A]"
+                className="text-xs text-[#B9B2C7] transition hover:text-[#E1483E]"
               >
                 全部消す
               </button>

@@ -81,8 +81,8 @@ export function YearCard({
   const slotCount = canAddMore ? items.length + 1 : items.length
 
   return (
-    <div className="rounded-2xl border border-[#F0ECF5] bg-white p-4 shadow-sm">
-      <span className="inline-flex items-center rounded-full bg-[#262230] px-3 py-1 text-sm font-semibold text-white">
+    <div className="rounded-2xl border-2 border-[#262230] bg-white p-4 shadow-[0_4px_12px_rgba(38,34,48,0.08)]">
+      <span className="font-maru inline-flex items-center rounded-xl border-2 border-[#262230] bg-[#8FE8C8] px-3 py-1 text-sm font-bold text-[#262230]">
         {year}
       </span>
 

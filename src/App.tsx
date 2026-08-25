@@ -104,12 +104,12 @@ function App() {
   }
 
   return (
-    <div className="min-h-svh bg-[#FAF8FC]">
+    <div className="min-h-svh bg-[#FFFBF6]">
       <Header onResetAll={resetAll} />
 
       <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
         {/* スマホ：入力／プレビューのタブ切り替え */}
-        <div className="mb-4 flex gap-2 rounded-full bg-white p-1 shadow-sm lg:hidden">
+        <div className="mb-4 flex gap-2 rounded-full border-2 border-[#262230] bg-white p-1 lg:hidden">
           <button
             type="button"
             onClick={() => setMobileTab('input')}

@@ -46,11 +46,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-[4px] bg-white p-5"
-        style={{
-          border: '1px solid #E4DEF0',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-        }}
+        className="w-full max-w-sm rounded-2xl border-2 border-[#262230] bg-white p-5 shadow-[0_6px_16px_rgba(38,34,48,0.14)]"
       >
         <h2
           id="confirm-dialog-title"
@@ -65,14 +61,14 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-full border border-[#D8D2E4] px-4 py-2 text-sm font-medium text-[#262230] transition hover:border-[#BFB4D6]"
+            className="rounded-full border-2 border-[#262230] bg-white px-4 py-2 text-sm font-bold text-[#262230] transition hover:bg-[#F5F2FB]"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-full bg-[#E4738A] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#D65F78]"
+            className="rounded-full border-2 border-[#262230] bg-[#FF8A80] px-4 py-2 text-sm font-bold text-[#262230] transition hover:bg-[#FF7062]"
           >
             {confirmLabel}
           </button>

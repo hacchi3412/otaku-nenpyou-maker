@@ -217,7 +217,7 @@ export function ShareButtons({
           type="button"
           onClick={handleSave}
           disabled={busy}
-          className="rounded-full bg-[#262230] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#3A3448] disabled:opacity-50"
+          className="rounded-full border-2 border-[#262230] bg-[#FFAFCE] px-4 py-2 text-sm font-bold text-[#262230] transition hover:bg-[#FF9AC0] disabled:opacity-50"
         >
           {status === 'saving' ? '保存中…' : '画像として保存'}
         </button>
@@ -225,7 +225,7 @@ export function ShareButtons({
           type="button"
           onClick={handleShare}
           disabled={busy}
-          className="rounded-full border border-[#D8D2E4] px-4 py-2 text-sm font-medium text-[#262230] transition hover:border-[#BFB4D6] disabled:opacity-50"
+          className="rounded-full border-2 border-[#262230] bg-white px-4 py-2 text-sm font-bold text-[#262230] transition hover:bg-[#F5F2FB] disabled:opacity-50"
         >
           {status === 'sharing'
             ? '準備中…'
