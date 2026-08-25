@@ -25,6 +25,9 @@ interface QuickAddCardProps {
  * テンポを止めないようにしている）。追加直後に出る確認メッセージのリンクから、
  * その項目のコメント欄へスクロール＋フォーカスし、必要な人だけその場で
  * 書き足せるようにした。
+ *
+ * カード自体（囲む枠線・角丸・影）は持たせず、下の区切り線だけで年カード
+ * 一覧から分ける、より平面的な見た目にしている（詳細は7章参照）。
  */
 export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
   // 年カードの表示順（新しい年が上）に合わせて降順にする
@@ -65,7 +68,7 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-[#F0ECF5] bg-white p-4 shadow-sm">
+    <div className="border-b border-[#F0ECF5] pb-5">
       <span className="inline-flex items-center rounded-full bg-[#F3D9FA] px-2.5 py-1 text-xs font-bold text-[#862E9C]">
         ⚡ クイック入力
       </span>
@@ -73,7 +76,7 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
         順番はバラバラでOK。思い出した順に追加できます
       </p>
 
-      <div className="mt-2.5 flex gap-2">
+      <div className="mt-2.5 flex gap-3">
         <select
           value={year}
           onChange={(e) => {
@@ -81,7 +84,7 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
             setMessage(null)
           }}
           aria-label="追加する年"
-          className="w-[92px] shrink-0 rounded-lg border border-[#E5E0EE] bg-white px-1.5 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+          className="w-[92px] shrink-0 border-0 border-b-2 border-[#E5E0EE] bg-transparent px-0 py-1.5 text-sm text-[#262230] outline-none focus:border-[#262230]"
         >
           {sortedYears.map((entry) => (
             <option key={entry.year} value={entry.year}>
@@ -101,7 +104,7 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
           }}
           maxLength={TITLE_MAX_LENGTH}
           placeholder="ハマったものを入力（20文字まで）"
-          className="min-w-0 flex-1 rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+          className="min-w-0 flex-1 border-0 border-b-2 border-[#E5E0EE] bg-transparent px-0 py-1.5 text-sm text-[#262230] outline-none focus:border-[#262230]"
         />
       </div>
 

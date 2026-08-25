@@ -37,6 +37,10 @@ interface SlotRowProps {
  * 「年を移動」は、間違えた年に入力してしまった項目を、消して打ち直す
  * ことなく別の年へ動かせるようにする機能（詳細は7章参照）。タイトル・
  * コメント・カラーはすべてそのまま移動先に引き継がれる。
+ *
+ * 入力欄はここでは「箱」を持たず（囲む背景・枠線・角丸なし）、下線だけの
+ * シンプルな見た目にしている。1件ずつを縦の区切り線（YearCard側）だけで
+ * 分ける、より編集画面・帳票寄りの見た目にするお試し（詳細は7章参照）。
  */
 export function SlotRow({
   item,
@@ -62,7 +66,7 @@ export function SlotRow({
     }
   }
   return (
-    <div className="rounded-xl border border-[#F0ECF5] bg-[#FAF8FC] p-3">
+    <div className="border-b border-[#F0ECF5] pb-3 last:border-0 last:pb-0">
       {continuationChips.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1.5">
           {continuationChips.map(({ item: chip, source }) => (
@@ -84,7 +88,7 @@ export function SlotRow({
         onChange={(e) => onTitleChange(e.target.value)}
         maxLength={TITLE_MAX_LENGTH}
         placeholder="ハマったものを入力（20文字まで）"
-        className="w-full rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+        className="w-full border-0 border-b-2 border-[#E5E0EE] bg-transparent px-0 py-1.5 text-sm text-[#262230] outline-none focus:border-[#262230]"
       />
 
       {item && (
@@ -99,7 +103,7 @@ export function SlotRow({
               // QuickAddCardから「コメント・色を編集」で飛んでこられるよう、
               // 項目IDをマークしておく（詳細はQuickAddCardのコメント参照）
               data-comment-for={item.id}
-              className="w-full resize-none rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-xs text-[#6B6375] outline-none focus:border-[#BFB4D6]"
+              className="w-full resize-none border-0 border-b border-[#E5E0EE] bg-transparent px-0 py-1.5 text-xs text-[#6B6375] outline-none focus:border-[#262230]"
             />
             <p className="mt-0.5 text-right text-[10px] text-[#B9B2C7]">
               {item.comment.length}/{COMMENT_MAX_LENGTH}
