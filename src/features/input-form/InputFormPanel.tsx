@@ -1,12 +1,23 @@
 import { MAX_ITEMS_PER_YEAR } from '../../constants/timeline'
 import type { TimelineItem, YearEntry } from '../../types/timeline'
 import { pickRandomColor } from '../../utils/color'
+import { findForwardContinuousYears } from '../../utils/itemSync'
 import { QuickAddCard } from './QuickAddCard'
 import { YearCard } from './YearCard'
 
 interface InputFormPanelProps {
   years: YearEntry[]
   onChangeYearItems: (year: number, items: TimelineItem[]) => void
+  /**
+   * 「前方まとめ編集」の実行（詳細は7章参照）。対象年一覧・変更前後の
+   * タイトルを渡すと、その年群の中でoldTitleに一致する項目をnewTitleへ
+   * 一括で書き換える（コメント・カラーには影響しない）。
+   */
+  onRenameItemsForward: (
+    targetYears: number[],
+    oldTitle: string,
+    newTitle: string,
+  ) => void
   onAddPastYears: () => void
 }
 
@@ -19,6 +30,7 @@ interface InputFormPanelProps {
 export function InputFormPanel({
   years,
   onChangeYearItems,
+  onRenameItemsForward,
   onAddPastYears,
 }: InputFormPanelProps) {
   // クイック入力からの追加。新規項目の色・コメントの引き継ぎ判定（同じ
@@ -60,6 +72,27 @@ export function InputFormPanel({
     return true
   }
 
+  // 「前方まとめ編集」：タイトル編集直後に、変更前のタイトルがfromYearより
+  // 後ろに連続していないか確認する（詳細は7章参照）。年群を求める部分は
+  // itemSync.tsに切り出し、実行（renameItemsForward）はコメント・カラーの
+  // 自動同期を避けるため、updateYearItemsとは別経路にしている
+  const handleCheckForwardRename = (
+    fromYear: number,
+    title: string,
+  ): number[] => findForwardContinuousYears(years, fromYear, title)
+
+  const handleRenameForward = (
+    fromYear: number,
+    oldTitle: string,
+    newTitle: string,
+  ): void => {
+    onRenameItemsForward(
+      findForwardContinuousYears(years, fromYear, oldTitle),
+      oldTitle,
+      newTitle,
+    )
+  }
+
   const allYears = years.map((y) => y.year)
 
   return (
@@ -80,6 +113,8 @@ export function InputFormPanel({
             allYears={allYears}
             onChange={(items) => onChangeYearItems(entry.year, items)}
             onMoveItem={handleMoveItem}
+            onCheckForwardRename={handleCheckForwardRename}
+            onRenameForward={handleRenameForward}
           />
         )
       })}
