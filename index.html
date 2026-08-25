@@ -3,6 +3,33 @@
   <head>
     <meta charset="UTF-8" />
 
+    <!--
+      LINEアプリ内蔵ブラウザで開かれた場合、Web Share API・ファイルダウンロード
+      （<a download>）がまともに動かず「画像として保存」「シェア」が失敗する
+      という実機報告があった（詳細は7章参照）。LINEは公式に、URLの末尾へ
+      openExternalBrowser=1を付けて開き直すと標準ブラウザ（Safari/Chrome）へ
+      ハンドオフする仕組みを提供しているため、Reactが起動するより前・でき
+      るだけ早いタイミングでこれを行い、アプリ本体がちらつき表示されるのを
+      防ぐ。標準ブラウザへ切り替わった後は同じUser-Agentにならないため、
+      無限リダイレクトにはならない。localStorageに保存したデータはドメイン
+      単位のためリダイレクト後も引き継がれる。
+      なお、X（Twitter）アプリ内蔵ブラウザにはUser-Agentに目印が一切付かない
+      既知の問題があり、同じ方式では検出できない（詳細は7章参照）。
+    -->
+    <script>
+      ;(function () {
+        var ua = navigator.userAgent || ''
+        var isLine = /\bLine\//i.test(ua)
+        var alreadyExternal = /[?&]openExternalBrowser=1(&|$)/.test(
+          location.href,
+        )
+        if (isLine && !alreadyExternal) {
+          var sep = location.href.indexOf('?') === -1 ? '?' : '&'
+          location.replace(location.href + sep + 'openExternalBrowser=1')
+        }
+      })()
+    </script>
+
     <!-- Google tag (gtag.js) -->
     <script
       async
