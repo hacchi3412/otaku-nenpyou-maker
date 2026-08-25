@@ -29,8 +29,14 @@ interface ShareButtonsProps {
 
 type Status = 'idle' | 'saving' | 'sharing'
 
+// X・LINEなどアプリ内蔵ブラウザ（WebView）で開かれた場合、Web Share API・
+// ファイルダウンロード（<a download>）がまともに動かず「画像として保存」
+// 「シェア」が失敗する事例が報告された（詳細は7章参照）。LINEはindex.html側で
+// 標準ブラウザへ自動的に切り替える対策を入れたが、Xのアプリ内蔵ブラウザは
+// User-Agentに目印が一切付かない既知の問題があり、同じ方式では検出できない。
+// 検出して自動対処できない以上、常に見えるヒントとして案内を添えておく。
 const PC_FALLBACK_HINT =
-  '「Xに投稿する」は画像がダウンロードされ、投稿画面が開きます。投稿欄に添付してください'
+  '「Xに投稿する」は画像がダウンロードされ、投稿画面が開きます。投稿欄に添付してください。X・LINEなどアプリ内のブラウザで開いている場合、保存やシェアがうまく動かないことがあります。その場合は画面右上のメニューなどから「Safariで開く」「デフォルトのブラウザで開く」を選んでからお試しください'
 
 /**
  * 「画像として保存」「シェア」ボタン。
@@ -188,10 +194,12 @@ export function ShareButtons({
       // しまう（実際に報告された不具合）。ダウンロードは先に確実に済ませる。
       //
       // トレードオフ：window.open()をユーザー操作から時間を置いて呼ぶことになる
-      // ため、エクスポートに時間がかかった場合はまれに投稿画面がポップアップ
-      // ブロックに引っかかることがありうる（詳細は7章参照）。ただしこの場合でも
-      // 画像は既に保存済みなので、ユーザーは手動でXを開いて添付すればよく、
-      // 「画像が保存されないまま投稿画面だけ開く」場合より実害は小さいと判断した。
+      // ため、エクスポートに時間がかかった場合はポップアップブロックに
+      // 引っかかることがありうる（X・LINE等のアプリ内蔵ブラウザで特に起きやすい。
+      // 詳細は7章参照）。この場合でも画像のダウンロードは既に試みているため、
+      // 「画像が保存されないまま投稿画面だけ開く」場合より実害は小さいと判断した
+      // （window.open()の戻り値を見て、実際に開けたかどうかで案内を出し分ける。
+      // 下記参照）
       downloadBlob(blob, EXPORT_FILE_NAME)
 
       // この経路（PC）では画像を投稿欄に自動添付できないため、投稿画面に
@@ -199,12 +207,23 @@ export function ShareButtons({
       // テキスト自体に添付を促す一言を含めておく（詳細はbuildTwitterIntentCaption
       // のコメント・7章参照）
       const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(buildTwitterIntentCaption(displayName))}&url=${encodeURIComponent(SITE_URL)}`
-      window.open(intentUrl, '_blank', 'noopener,noreferrer')
-      trackEvent('share', { method: 'twitter_intent', item_count: itemCount })
+      const opened = window.open(intentUrl, '_blank', 'noopener,noreferrer')
 
-      setMessage(
-        '画像をダウンロードしました。投稿画面を開いたので、投稿欄に添付してください。',
-      )
+      // window.open()はポップアップブロック等で失敗するとnullを返す（例外は
+      // 投げない）。X・LINE等のアプリ内蔵ブラウザはこの種のブロックが起きやすく、
+      // 従来は失敗時も「投稿画面を開いた」という誤ったメッセージを出していた。
+      // 実際には開けていない可能性があるため、戻り値を見て案内を出し分ける
+      // （詳細は7章参照）。GA4のshareイベントも実際に開けた場合のみ送る
+      if (opened) {
+        trackEvent('share', { method: 'twitter_intent', item_count: itemCount })
+        setMessage(
+          '画像をダウンロードしました。投稿画面を開いたので、投稿欄に添付してください。',
+        )
+      } else {
+        setMessage(
+          'このブラウザでは投稿画面を開けませんでした（画像のダウンロードも失敗している可能性があります）。画面右上のメニューなどから「Safariで開く」を選んでからやり直してください。',
+        )
+      }
     } catch (error) {
       console.error(error)
       setMessage('画像の保存に失敗しました。もう一度お試しください。')
