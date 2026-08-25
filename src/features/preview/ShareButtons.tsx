@@ -1,6 +1,7 @@
 import { useEffect, useState, type RefObject } from 'react'
 import {
   buildShareCaption,
+  buildTwitterIntentCaption,
   EXPORT_FILE_NAME,
   SITE_URL,
 } from '../../constants/share'
@@ -193,7 +194,11 @@ export function ShareButtons({
       // 「画像が保存されないまま投稿画面だけ開く」場合より実害は小さいと判断した。
       downloadBlob(blob, EXPORT_FILE_NAME)
 
-      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(buildShareCaption(displayName))}&url=${encodeURIComponent(SITE_URL)}`
+      // この経路（PC）では画像を投稿欄に自動添付できないため、投稿画面に
+      // 切り替わった後もアプリ側のヒント文言に頼らず気づけるよう、投稿欄の
+      // テキスト自体に添付を促す一言を含めておく（詳細はbuildTwitterIntentCaption
+      // のコメント・7章参照）
+      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(buildTwitterIntentCaption(displayName))}&url=${encodeURIComponent(SITE_URL)}`
       window.open(intentUrl, '_blank', 'noopener,noreferrer')
       trackEvent('share', { method: 'twitter_intent', item_count: itemCount })
 
