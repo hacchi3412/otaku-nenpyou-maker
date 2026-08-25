@@ -63,7 +63,9 @@ export function InputFormPanel({
   const allYears = years.map((y) => y.year)
 
   return (
-    <div className="flex flex-col gap-3">
+    // カード同士のgapではなく、各セクション自身が持つ下側の区切り線
+    // （border-b）と余白で連続させる（詳細は7章参照）。
+    <div className="flex flex-col">
       <QuickAddCard years={years} onAdd={handleQuickAdd} />
       {[...years].reverse().map((entry) => {
         // 上から新しい年順・下から古い年順のどちらで埋めても引き継ぎ候補が出るよう、
@@ -86,7 +88,7 @@ export function InputFormPanel({
       <button
         type="button"
         onClick={onAddPastYears}
-        className="rounded-full border border-dashed border-[#D8D2E4] px-4 py-2 text-sm text-[#8D869B] transition hover:border-[#BFB4D6] hover:text-[#262230]"
+        className="mt-4 rounded-full border border-dashed border-[#D8D2E4] px-4 py-2 text-sm text-[#8D869B] transition hover:border-[#BFB4D6] hover:text-[#262230]"
       >
         ＋もっと過去の年を追加する
       </button>

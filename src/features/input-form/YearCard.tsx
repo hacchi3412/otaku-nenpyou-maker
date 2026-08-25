@@ -81,10 +81,16 @@ export function YearCard({
   const slotCount = canAddMore ? items.length + 1 : items.length
 
   return (
-    <div className="rounded-2xl border border-[#F0ECF5] bg-white p-4 shadow-sm">
-      <span className="inline-flex items-center rounded-full bg-[#262230] px-3 py-1 text-sm font-semibold text-white">
+    <div className="border-b border-[#F0ECF5] py-5 first:pt-0">
+      {/*
+        「カードの中にカード、その中に入力欄」という入れ子の箱っぽさ
+        （生成AI感）を減らすお試し（詳細は7章参照）。年ラベルは背景色付きの
+        丸ピルではなく、見出しのようなただの太字テキスト＋区切り線に変更した。
+      */}
+      <h3 className="font-maru text-base font-bold text-[#262230]">
         {year}
-      </span>
+        <span className="ml-0.5 text-xs font-normal text-[#B9B2C7]">年</span>
+      </h3>
 
       <div className="mt-3 flex flex-col gap-3">
         {Array.from({ length: slotCount }, (_, index) => {
