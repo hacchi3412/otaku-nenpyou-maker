@@ -33,7 +33,8 @@ interface PreviewPanelProps {
  * それらのスタイルはexportTargetRefのdivに直接持たせている。
  *
  * 装飾は引き算方針: 角丸は最小限、影はほぼ使わない、グラデーションなし、
- * 枠線は本当に必要な箇所だけに絞っている。
+ * 枠線は本当に必要な箇所だけに絞っている（お試しのデザイン変更で、カード
+ * 外枠1箇所だけ太めのink罫線＋柔らかい影に更新。詳細は7章参照）。
  *
  * カード全体の横幅は、実際に使われているレーン数（1〜3）に応じて可変にする。
  * ブロック列が少ないときに右側へ余分な余白ができないようにするため。
@@ -70,22 +71,22 @@ export function PreviewPanel({
           onChange={(e) => onDisplayNameChange(e.target.value)}
           maxLength={DISPLAY_NAME_MAX_LENGTH}
           placeholder={DEFAULT_DISPLAY_NAME}
-          className="w-56 rounded-lg border border-[#E5E0EE] bg-white px-2 py-1 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+          className="w-56 rounded-xl border-2 border-[#262230] bg-white px-2 py-1 text-sm text-[#262230] outline-none focus:ring-4 focus:ring-[#FFAFCE]/50"
         />
       </div>
 
       <ScaledCanvas width={chartWidth}>
         <div
           ref={exportTargetRef}
-          className="relative overflow-hidden rounded-[4px] px-7 pt-[30px] pb-[26px]"
+          className="relative overflow-hidden rounded-2xl px-7 pt-[30px] pb-[26px]"
           style={{
             backgroundColor: '#FFFDFB',
-            border: '1px solid #E4DEF0',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+            border: '2px solid #262230',
+            boxShadow: '0 6px 16px rgba(38, 34, 48, 0.1)',
           }}
         >
           <h2 className="font-maru mb-5 text-[22px] font-black whitespace-nowrap text-[#4A4560]">
-            {headingOwner}の<span className="text-[#E8899F]">オタク年表</span>
+            {headingOwner}の<span className="text-[#FF4F91]">オタク年表</span>
           </h2>
 
           <TimelineChart
@@ -123,7 +124,7 @@ export function PreviewPanel({
           <img
             src={`${import.meta.env.BASE_URL}ogp.png`}
             alt="サンプルの年表画像。2023年から2026年にかけて、アニメA・ストリーマーD・ソシャゲB・アイドルC・Jリーグなど、年ごとに色分けされたブロックとコメントが並んでいる"
-            className="w-full max-w-md rounded-lg border border-[#E5E0EE] shadow-sm"
+            className="w-full max-w-md rounded-xl border-2 border-[#262230]/30 shadow-sm"
           />
         </div>
       )}

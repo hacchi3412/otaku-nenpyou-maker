@@ -62,7 +62,7 @@ export function SlotRow({
     }
   }
   return (
-    <div className="rounded-xl border border-[#F0ECF5] bg-[#FAF8FC] p-3">
+    <div className="rounded-xl border-2 border-[#262230]/15 bg-[#FFFBF6] p-3">
       {continuationChips.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1.5">
           {continuationChips.map(({ item: chip, source }) => (
@@ -70,7 +70,7 @@ export function SlotRow({
               key={`${source}-${chip.id}`}
               type="button"
               onClick={() => onPickChip(chip)}
-              className="rounded-full border border-[#D8D2E4] bg-white px-2.5 py-1 text-xs text-[#6B6375] transition hover:border-[#BFB4D6] hover:text-[#262230]"
+              className="rounded-full border-2 border-[#262230] bg-[#E0CCFA] px-2.5 py-1 text-xs font-bold text-[#262230] transition hover:bg-[#D3B8F5]"
             >
               {source === 'previous' ? '昨年から' : '翌年から'}：{chip.title}
             </button>
@@ -84,7 +84,7 @@ export function SlotRow({
         onChange={(e) => onTitleChange(e.target.value)}
         maxLength={TITLE_MAX_LENGTH}
         placeholder="ハマったものを入力（20文字まで）"
-        className="w-full rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
+        className="w-full rounded-xl border-2 border-[#262230] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:ring-4 focus:ring-[#FFAFCE]/50"
       />
 
       {item && (
@@ -99,7 +99,7 @@ export function SlotRow({
               // QuickAddCardから「コメント・色を編集」で飛んでこられるよう、
               // 項目IDをマークしておく（詳細はQuickAddCardのコメント参照）
               data-comment-for={item.id}
-              className="w-full resize-none rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-xs text-[#6B6375] outline-none focus:border-[#BFB4D6]"
+              className="w-full resize-none rounded-xl border-2 border-[#262230] bg-white px-3 py-2 text-xs text-[#6B6375] outline-none focus:ring-4 focus:ring-[#FFAFCE]/50"
             />
             <p className="mt-0.5 text-right text-[10px] text-[#B9B2C7]">
               {item.comment.length}/{COMMENT_MAX_LENGTH}
@@ -125,10 +125,10 @@ export function SlotRow({
                     aria-pressed={item.color === swatch.bg}
                     onClick={() => onColorChange(swatch.bg)}
                     style={{ backgroundColor: swatch.bg }}
-                    className={`h-6 w-6 rounded-full border-2 transition ${
+                    className={`h-6 w-6 rounded-full border-2 border-[#262230] transition ${
                       item.color === swatch.bg
-                        ? 'border-[#262230]'
-                        : 'border-transparent hover:border-[#D8D2E4]'
+                        ? 'scale-110 border-[3px]'
+                        : 'hover:scale-105'
                     }`}
                   />
                 ))}
@@ -143,7 +143,7 @@ export function SlotRow({
                       handleSelectMoveTarget(Number(e.target.value))
                     }
                     aria-label="移動先の年"
-                    className="rounded-lg border border-[#E5E0EE] bg-white px-1.5 py-1 text-xs text-[#262230] outline-none focus:border-[#BFB4D6]"
+                    className="rounded-lg border-2 border-[#262230] bg-white px-1.5 py-1 text-xs text-[#262230] outline-none focus:ring-4 focus:ring-[#FFAFCE]/50"
                   >
                     <option value="" disabled>
                       年を選択
@@ -178,14 +178,14 @@ export function SlotRow({
                   <button
                     type="button"
                     onClick={onDelete}
-                    className="text-xs text-[#B9B2C7] transition hover:text-[#E4738A]"
+                    className="text-xs text-[#B9B2C7] transition hover:text-[#E1483E]"
                   >
                     削除
                   </button>
                 </div>
               )}
               {moveError && (
-                <p className="text-[10px] text-[#E4738A]">{moveError}</p>
+                <p className="text-[10px] text-[#E1483E]">{moveError}</p>
               )}
             </div>
           </div>

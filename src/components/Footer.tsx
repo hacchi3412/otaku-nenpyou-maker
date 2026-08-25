@@ -12,7 +12,7 @@ const linkClassName =
  */
 export function Footer() {
   return (
-    <footer className="border-t border-[#F0ECF5] px-4 py-6 text-center sm:px-6">
+    <footer className="border-t-2 border-[#262230] px-4 py-6 text-center sm:px-6">
       <p className="text-xs text-[#8D869B]">
         ご意見・不具合のご報告は
         <a
