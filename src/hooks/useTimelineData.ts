@@ -87,6 +87,37 @@ export function useTimelineData() {
     [setData],
   )
 
+  /**
+   * 「前方まとめ編集」の実行。指定した年群（findForwardContinuousYearsで
+   * 求めた、連続している前提の年一覧）の中で、oldTitleに完全一致する項目の
+   * タイトルだけをnewTitleへ一括で書き換える。
+   *
+   * updateYearItemsとは違い、propagateItemsByTitleによるコメント・カラーの
+   * 自動同期は行わない。まとめて変更したいのはタイトルだけであり、対象年
+   * ごとに書いた個別のコメントまで（どれか1年の内容に）揃ってしまうのは
+   * このまとめ編集が意図しない副作用になるため（詳細は7章参照）。
+   */
+  const renameItemsForward = useCallback(
+    (targetYears: number[], oldTitle: string, newTitle: string) => {
+      if (targetYears.length === 0) return
+      const targetYearSet = new Set(targetYears)
+      setData((prev) => ({
+        ...prev,
+        years: prev.years.map((entry) =>
+          targetYearSet.has(entry.year)
+            ? {
+                ...entry,
+                items: entry.items.map((item) =>
+                  item.title === oldTitle ? { ...item, title: newTitle } : item,
+                ),
+              }
+            : entry,
+        ),
+      }))
+    },
+    [setData],
+  )
+
   const addPastYears = useCallback(() => {
     setData((prev) => ({
       ...prev,
@@ -99,5 +130,11 @@ export function useTimelineData() {
     setData(createInitialData())
   }, [setData])
 
-  return { years: data.years, updateYearItems, addPastYears, resetAll }
+  return {
+    years: data.years,
+    updateYearItems,
+    renameItemsForward,
+    addPastYears,
+    resetAll,
+  }
 }

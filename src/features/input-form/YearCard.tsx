@@ -25,6 +25,17 @@ interface YearCardProps {
    * 失敗した場合falseを返す。
    */
   onMoveItem: (fromYear: number, item: TimelineItem, toYear: number) => boolean
+  /**
+   * 「前方まとめ編集」：指定タイトルがこの年より後ろに連続している年一覧を返す
+   * （詳細は7章参照）。
+   */
+  onCheckForwardRename: (fromYear: number, title: string) => number[]
+  /** 「前方まとめ編集」の実行：この年より後ろの連続範囲もまとめて新タイトルに変更する */
+  onRenameForward: (
+    fromYear: number,
+    oldTitle: string,
+    newTitle: string,
+  ) => void
 }
 
 /**
@@ -40,6 +51,8 @@ export function YearCard({
   allYears,
   onChange,
   onMoveItem,
+  onCheckForwardRename,
+  onRenameForward,
 }: YearCardProps) {
   const availableYears = allYears.filter((y) => y !== year)
   const canAddMore = items.length < MAX_ITEMS_PER_YEAR
@@ -117,6 +130,12 @@ export function YearCard({
                 item ? onMoveItem(year, item, toYear) : false
               }
               onDelete={() => item && removeItem(item.id)}
+              onCheckForwardRename={(title) =>
+                onCheckForwardRename(year, title)
+              }
+              onRenameForward={(oldTitle, newTitle) =>
+                onRenameForward(year, oldTitle, newTitle)
+              }
             />
           )
         })}

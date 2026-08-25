@@ -16,7 +16,8 @@ type MobileTab = 'input' | 'preview'
 type TutorialStep = 1 | 2
 
 function App() {
-  const { years, updateYearItems, addPastYears, resetAll } = useTimelineData()
+  const { years, updateYearItems, renameItemsForward, addPastYears, resetAll } =
+    useTimelineData()
   const [displayName, setDisplayName] = useLocalStorage(
     DISPLAY_NAME_STORAGE_KEY,
     '',
@@ -143,6 +144,7 @@ function App() {
             <InputFormPanel
               years={years}
               onChangeYearItems={updateYearItems}
+              onRenameItemsForward={renameItemsForward}
               onAddPastYears={addPastYears}
             />
           </section>

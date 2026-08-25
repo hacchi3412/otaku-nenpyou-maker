@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ContinuationChip, TimelineItem } from '../../types/timeline'
 import {
   COMMENT_MAX_LENGTH,
@@ -20,6 +20,13 @@ interface SlotRowProps {
   /** 指定した年へ移動する。成功時true、移動先が上限（3件）に達していて失敗した場合false */
   onMove: (toYear: number) => boolean
   onDelete: () => void
+  /**
+   * 「前方まとめ編集」：指定した（変更前の）タイトルが、この年より後ろに
+   * 連続している年一覧を返す（詳細は7章参照）。
+   */
+  onCheckForwardRename: (oldTitle: string) => number[]
+  /** 「前方まとめ編集」の実行：この年より後ろの連続範囲もまとめて新タイトルに変更する */
+  onRenameForward: (oldTitle: string, newTitle: string) => void
 }
 
 /**
@@ -37,6 +44,14 @@ interface SlotRowProps {
  * 「年を移動」は、間違えた年に入力してしまった項目を、消して打ち直す
  * ことなく別の年へ動かせるようにする機能（詳細は7章参照）。タイトル・
  * コメント・カラーはすべてそのまま移動先に引き継がれる。
+ *
+ * 「前方まとめ編集」は、継続入力（3.6・7章参照）で複数年にまたがった
+ * タイトルを改名したいとき、1年ずつ打ち直す手間を減らす機能（詳細は
+ * 7章参照）。タイトル欄からフォーカスが外れた（編集を終えた）タイミングで、
+ * 変更前のタイトルがこの年より後ろに連続していないか確認し、あれば
+ * 「この年だけ」「まとめて変更」を選べる小さな確認を出す。過去方向は
+ * 見ないため、途中の年から名前を分けたい場合はその年から編集を始めれば
+ * 過去の年には影響しない。
  */
 export function SlotRow({
   item,
@@ -48,9 +63,21 @@ export function SlotRow({
   onColorChange,
   onMove,
   onDelete,
+  onCheckForwardRename,
+  onRenameForward,
 }: SlotRowProps) {
   const [isMoving, setIsMoving] = useState(false)
   const [moveError, setMoveError] = useState<string | null>(null)
+  // フォーカスが当たった時点でのタイトルを覚えておき、blur時の値と比較する
+  // ことで「今回の編集で実際に変わったか」を判定する（詳細は7章参照）。
+  // タイトルはonChangeのたびに即座に親へ反映されるため、blur時点で
+  // item.titleは既に新しい値になっている
+  const titleOnFocusRef = useRef('')
+  const [renamePrompt, setRenamePrompt] = useState<{
+    oldTitle: string
+    newTitle: string
+    years: number[]
+  } | null>(null)
 
   const handleSelectMoveTarget = (toYear: number) => {
     const moved = onMove(toYear)
@@ -61,6 +88,16 @@ export function SlotRow({
       setMoveError(`${toYear}年はすでに上限（3件）まで入力されています`)
     }
   }
+
+  const handleTitleBlur = () => {
+    const oldTitle = titleOnFocusRef.current
+    const newTitle = item?.title ?? ''
+    if (!item || !oldTitle || !newTitle || oldTitle === newTitle) return
+    const years = onCheckForwardRename(oldTitle)
+    if (years.length === 0) return
+    setRenamePrompt({ oldTitle, newTitle, years })
+  }
+
   return (
     <div className="rounded-xl border border-[#F0ECF5] bg-[#FAF8FC] p-3">
       {continuationChips.length > 0 && (
@@ -82,10 +119,44 @@ export function SlotRow({
         type="text"
         value={item?.title ?? ''}
         onChange={(e) => onTitleChange(e.target.value)}
+        onFocus={() => {
+          titleOnFocusRef.current = item?.title ?? ''
+          setRenamePrompt(null)
+        }}
+        onBlur={handleTitleBlur}
         maxLength={TITLE_MAX_LENGTH}
         placeholder="ハマったものを入力（20文字まで）"
         className="w-full rounded-lg border border-[#E5E0EE] bg-white px-3 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
       />
+
+      {renamePrompt && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-2 rounded-lg bg-[#F3F0FA] px-2.5 py-1.5 text-xs text-[#6B6375]">
+          <span>
+            {`「${renamePrompt.oldTitle}」は${renamePrompt.years[0]}${
+              renamePrompt.years.length > 1
+                ? `〜${renamePrompt.years[renamePrompt.years.length - 1]}`
+                : ''
+            }年にも続いています`}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              onRenameForward(renamePrompt.oldTitle, renamePrompt.newTitle)
+              setRenamePrompt(null)
+            }}
+            className="rounded-full bg-[#262230] px-2.5 py-1 font-medium text-white transition hover:bg-[#3A3448]"
+          >
+            まとめて変更（{renamePrompt.years.length}件）
+          </button>
+          <button
+            type="button"
+            onClick={() => setRenamePrompt(null)}
+            className="rounded-full border border-[#D8D2E4] bg-white px-2.5 py-1 text-[#6B6375] transition hover:border-[#BFB4D6]"
+          >
+            この年だけ
+          </button>
+        </div>
+      )}
 
       {item && (
         <div className="mt-2 flex flex-col gap-2">

@@ -55,6 +55,38 @@ export function findExistingColorForTitle(
  * 前提で呼び出すこと。そうしないと、新規項目にまだ割り当てられただけの
  * ランダムな色が、逆に既存の色を上書きしてしまう。
  */
+/**
+ * fromYearの翌年以降で、指定したタイトルの項目が連続している年を、
+ * 連続が途切れる（該当タイトルの項目がない年に当たる）まで順に集めて返す。
+ * fromYear自身は含まない（呼び出し側で既に確定した変更として扱う前提のため）。
+ *
+ * 「前方まとめ編集」機能で使う：ある年のタイトルを変更したとき、それより
+ * 後ろ（未来方向）に同じ（変更前の）タイトルが連続していれば、まとめて
+ * 変更するかどうかをユーザーに確認する（詳細は7章参照）。過去方向は見ない
+ * ため、「途中の年から名前を分けたい」場合はその年から編集を始めれば
+ * 過去には影響しない。
+ *
+ * yearsは常に年が連続した昇順配列であること（createInitialYears・
+ * prependPastYearsで保証されている前提）。
+ */
+export function findForwardContinuousYears(
+  years: YearEntry[],
+  fromYear: number,
+  title: string,
+): number[] {
+  const startIndex = years.findIndex((entry) => entry.year === fromYear)
+  if (startIndex === -1) return []
+
+  const result: number[] = []
+  for (let i = startIndex + 1; i < years.length; i++) {
+    const entry = years[i]
+    if (entry.year !== years[i - 1].year + 1) break // 年が歯抜けの場合は打ち切り（通常は発生しない想定）
+    if (!entry.items.some((item) => item.title === title)) break
+    result.push(entry.year)
+  }
+  return result
+}
+
 export function propagateItemsByTitle(
   years: YearEntry[],
   sourceItems: TimelineItem[],
