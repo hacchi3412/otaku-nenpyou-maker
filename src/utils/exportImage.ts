@@ -37,21 +37,37 @@ function loadFontEmbedCSS(node: HTMLElement): Promise<string> {
 // iOSに限り、プレビュー表示中にダミーの書き出しを1回済ませておくことで、
 // ユーザーが実際にボタンを押す時点をこの「1回目」に当たらせないようにする
 // （詳細は7章参照）。
+//
+// ただし「プレビュー表示時に裏で1回済ませておく」だけでは、このダミー書き出し
+// 自体がまだ完了していないうちに実際のクリックが来た場合、両者がほぼ同時に
+// toBlob()を呼ぶ形になってしまい、WebKit視点では「1回目」がどちらか保証
+// されない（実際のクリック側が「1回目」に当たってしまいうる）。ネットワークや
+// 端末の状態次第でこのダミー書き出しの完了が遅れるケース（プライベート
+// ブラウジングでは追加のセキュリティチェック等により読み込みが遅れやすい。
+// downloadBlobのコメント参照）で発生しやすいと考えられる。そのため
+// exportNodeAsPngBlob側は、実際の書き出しの直前に必ずこのウォームアップの
+// 完了を待つ（未着手なら開始して待つ）ことで、順序を保証する。
 let iosRenderWarmupPromise: Promise<void> | null = null
 
-function warmUpIOSRendering(node: HTMLElement, fontEmbedCSS: string) {
-  if (!isIOS() || iosRenderWarmupPromise) return
-  iosRenderWarmupPromise = toBlob(node, {
-    pixelRatio: EXPORT_PIXEL_RATIO,
-    backgroundColor: '#ffffff',
-    fontEmbedCSS,
-  })
-    .then(() => undefined)
-    .catch(() => {
-      // 失敗しても実際の書き出し（exportNodeAsPngBlob）には影響しないため、
-      // ここでは無視する。次回のプレフェッチでやり直せるよう空にしておく。
-      iosRenderWarmupPromise = null
+function warmUpIOSRendering(
+  node: HTMLElement,
+  fontEmbedCSS: string | undefined,
+): Promise<void> {
+  if (!isIOS()) return Promise.resolve()
+  if (!iosRenderWarmupPromise) {
+    iosRenderWarmupPromise = toBlob(node, {
+      pixelRatio: EXPORT_PIXEL_RATIO,
+      backgroundColor: '#ffffff',
+      fontEmbedCSS,
     })
+      .then(() => undefined)
+      .catch(() => {
+        // 失敗しても実際の書き出し（exportNodeAsPngBlob）には影響しないため、
+        // ここでは無視する。次回の呼び出しでやり直せるよう空にしておく。
+        iosRenderWarmupPromise = null
+      })
+  }
+  return iosRenderWarmupPromise
 }
 
 /**
@@ -59,8 +75,9 @@ function warmUpIOSRendering(node: HTMLElement, fontEmbedCSS: string) {
  * 「保存」「シェア」ボタンが押されるより前（プレビュー表示時）に呼んでおくことで、
  * 実際にボタンが押された時点ではキャッシュ済みの状態にし、待ち時間を無くす。
  * あわせてiOSでは、上記のレンダリング1回目問題を避けるためのダミー書き出しも
- * 一度だけ行っておく。いずれも失敗時は無視してよい
- * （exportNodeAsPngBlob側でフォールバック・実際の書き出しで再試行される）。
+ * 一度だけ開始しておく（完了を待つのはexportNodeAsPngBlob側の役目）。
+ * いずれも失敗時は無視してよい（exportNodeAsPngBlob側でフォールバック・
+ * 実際の書き出しで再試行される）。
  */
 export function prefetchFontEmbedCSS(node: HTMLElement) {
   loadFontEmbedCSS(node)
@@ -79,6 +96,12 @@ export async function exportNodeAsPngBlob(node: HTMLElement): Promise<Blob> {
   // 万一キャッシュの取得自体が失敗していた場合はundefinedを渡し、
   // html-to-image自身の通常の取得処理にフォールバックさせる。
   const fontEmbedCSS = await loadFontEmbedCSS(node).catch(() => undefined)
+
+  // iOSのレンダリング1回目問題（上記コメント参照）を避けるため、ウォーム
+  // アップの完了を待ってから実際の書き出しを行う。プレビュー表示時の
+  // 先読み（prefetchFontEmbedCSS）で既に開始・完了していれば即座に
+  // 解決するため、通常はここでの待ち時間は発生しない。
+  await warmUpIOSRendering(node, fontEmbedCSS)
 
   const blob = await toBlob(node, {
     pixelRatio: EXPORT_PIXEL_RATIO,
