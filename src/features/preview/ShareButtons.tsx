@@ -1,6 +1,5 @@
 import { useEffect, useState, type RefObject } from 'react'
 import {
-  buildShareCaption,
   buildTwitterIntentCaption,
   EXPORT_FILE_NAME,
   SITE_URL,
@@ -11,7 +10,6 @@ import {
   exportNodeAsPngBlob,
   prefetchFontEmbedCSS,
 } from '../../utils/exportImage'
-import { canShareFiles, isIOS, isMobileDevice } from '../../utils/platform'
 
 interface ShareButtonsProps {
   /** 画像として書き出す対象（幅固定の年表本体）への参照 */
@@ -29,27 +27,23 @@ interface ShareButtonsProps {
 
 type Status = 'idle' | 'saving' | 'sharing'
 
-// X・LINEなどアプリ内蔵ブラウザ（WebView）で開かれた場合、Web Share API・
-// ファイルダウンロード（<a download>）がまともに動かず「画像として保存」
-// 「シェア」が失敗する事例が報告された（詳細は7章参照）。LINEはindex.html側で
-// 標準ブラウザへ自動的に切り替える対策を入れたが、Xのアプリ内蔵ブラウザは
-// User-Agentに目印が一切付かない既知の問題があり、同じ方式では検出できない。
-// 検出して自動対処できない以上、常に見えるヒントとして案内を添えておく。
 const PC_FALLBACK_HINT =
-  '「Xに投稿する」は画像がダウンロードされ、投稿画面が開きます。投稿欄に添付してください。X・LINEなどアプリ内のブラウザで開いている場合、保存やシェアがうまく動かないことがあります。その場合は画面右上のメニューなどから「Safariで開く」「デフォルトのブラウザで開く」を選んでからお試しください'
+  '「Xに投稿する」は画像がダウンロードされ、投稿画面が開きます。投稿欄に添付してください'
 
 /**
- * 「画像として保存」「シェア」ボタン。
- * サーバーを使わず完結させるため、
- * - 保存: iOSでは共有シート（画像保存がワンタップで並ぶ）、それ以外は直接ダウンロード
- * - シェア: モバイル端末でOSの共有シートに画像ファイルを渡せる場合は、
- *   navigator.share()でOS標準の共有シートを開き、画像・キャプション・URLを
- *   まとめて渡す（宛先はX限定ではなくユーザーが選択）。PC（デスクトップ）では、
- *   navigator.share()自体が使える環境が増えてきているが、PCのOS標準共有シート
- *   にはそもそもX（Twitter）が登録されていないことが多く、「シェアしたのに
- *   Xが選べない」という実機報告があった。そのためPCでは機能の有無に関わらず
- *   常に、画像を先にダウンロードしてからXの投稿画面を新規タブで開く方式
- *   （ボタン名は「Xに投稿する」）を使う（詳細は7章参照）
+ * PC（デスクトップ）専用の「画像として保存」「Xに投稿する」ボタン。
+ *
+ * モバイルではWeb Share API・`<a download>`のどちらもX・LINEのアプリ内蔵
+ * ブラウザで機能しないことがある問題を踏まえ、`MobileCompleteFlow`に
+ * 一本化した（詳細はそちらのコメント・7章参照）。このコンポーネントは
+ * `PreviewPanel`側で`isMobileDevice()`がfalseの場合のみ使われるため、
+ * モバイル固有の分岐（共有シート・Web Share API等）は持たない。
+ *
+ * PCではサーバーを使わず完結させるため、画像を先にダウンロードしてから
+ * Xの投稿画面を新規タブで開く方式にしている。PCのOS標準共有シートには
+ * そもそもX（Twitter）が登録されていないことが多く、Web Share APIを
+ * 使っても「シェアしたのにXが選べない」という実機報告があったため
+ * （詳細は7章参照）。
  *
  * 保存・シェアが実際に完了した時点（クリックした時点ではない。キャンセル・
  * 失敗した操作まで計測しないため）で、GA4へimage_save／shareイベントを送る。
@@ -63,14 +57,6 @@ export function ShareButtons({
 }: ShareButtonsProps) {
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState<string | null>(null)
-  // 共有シート経由にするかどうかは、実行環境（主にOS・ブラウザ）で決まり
-  // セッション中に変わることはないため、初回レンダー時に一度だけ判定する。
-  // canShareFiles()（画像ファイルを渡せるかの機能検出）だけでなく
-  // isMobileDevice()も合わせて見ているのは、PCのOS共有シートにXが
-  // 登録されていないことが多いため（詳細はisMobileDeviceのコメント・7章参照）
-  const [shouldUseShareSheet] = useState(
-    () => canShareFiles() && isMobileDevice(),
-  )
 
   // 「保存」「シェア」を押した瞬間にフォント埋め込み用CSSの取得（数百リクエスト
   // 規模になりうる重い処理。詳細はexportImage.tsのコメント参照）が走ると体感が
@@ -87,50 +73,8 @@ export function ShareButtons({
     setMessage(null)
     try {
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
-      const file = new File([blob], EXPORT_FILE_NAME, { type: 'image/png' })
-
-      // iOS SafariはBlobの<a download>を「保存」ではなく「画像を開くだけ」として
-      // 扱ってしまい、そこから長押しで保存する手間が発生する。
-      // ネイティブの共有シート経由なら「イメージを保存」がワンタップで並ぶため、
-      // iOSではこちらを優先する（テキストは付けず、保存だけを促す）。
-      //
-      // ただしWeb Share APIはプライベートブラウジング中などに失敗することがある
-      // （canShareがtrueを返してもshare()自体がNotAllowedError等で拒否される事例が
-      // 報告されている）。ユーザーが共有をキャンセルした場合（AbortError）以外は、
-      // 通常のダウンロードにフォールバックして保存自体は完了させる。
-      let saved = false
-      if (isIOS()) {
-        try {
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file] })
-            saved = true
-          }
-        } catch (shareError) {
-          if (
-            shareError instanceof DOMException &&
-            shareError.name === 'AbortError'
-          ) {
-            // 共有シートをユーザーがキャンセルした場合は何もしない
-            return
-          }
-          console.warn(
-            '共有シートでの保存に失敗したため、直接ダウンロードにフォールバックします',
-            shareError,
-          )
-        }
-      }
-
-      if (!saved) {
-        downloadBlob(blob, EXPORT_FILE_NAME)
-      }
-
-      // ここまで到達するのは、共有シート経由（saved=true）／直接ダウンロード
-      // （saved=false）のどちらかで保存が完了した場合のみ（キャンセル時は
-      // 上のAbortErrorの分岐でreturnしており、ここには来ない）
-      trackEvent('image_save', {
-        method: saved ? 'share_sheet' : 'download',
-        item_count: itemCount,
-      })
+      downloadBlob(blob, EXPORT_FILE_NAME)
+      trackEvent('image_save', { method: 'download', item_count: itemCount })
     } catch (error) {
       console.error(error)
       setMessage('画像の保存に失敗しました。もう一度お試しください。')
@@ -147,62 +91,13 @@ export function ShareButtons({
     try {
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
 
-      if (shouldUseShareSheet) {
-        // OS標準の共有シートに画像・キャプション・URLをまとめて渡す。
-        // 添付は共有シート側で自動的に行われるため、手動添付の案内は不要。
-        // 宛先はユーザーが共有シートから選ぶため、Xとは限らない
-        // （モバイル端末限定の分岐。PCではisMobileDevice()がfalseになるため
-        // shouldUseShareSheetがtrueにならず、ここには入らない）。
-        //
-        // urlは独立したフィールドとして渡さず、textに直接埋め込んでいる。
-        // filesと一緒にurlを渡すと、iOS（WebKit）+ Xの組み合わせで実機検証した際に
-        // urlだけが共有結果から欠落する（画像とキャプションは渡るがURLが本文に
-        // 含まれない）ことを確認した。WebKitはfilesと他のフィールドを併用した際の
-        // 挙動が不安定なことが知られており、Androidの共有（Intent.ACTION_SEND）も
-        // もともとtext/urlを分けて渡せず1本の文字列に結合される仕様のため、
-        // urlは常にtextの一部として渡す方が環境をまたいで確実に届く。
-        const file = new File([blob], EXPORT_FILE_NAME, { type: 'image/png' })
-        try {
-          await navigator.share({
-            files: [file],
-            text: `${buildShareCaption(displayName)}\n${SITE_URL}`,
-          })
-          trackEvent('share', { method: 'web_share', item_count: itemCount })
-          return
-        } catch (shareError) {
-          if (
-            shareError instanceof DOMException &&
-            shareError.name === 'AbortError'
-          ) {
-            // ユーザーが共有をキャンセルした場合は何もしない
-            return
-          }
-          console.warn(
-            '共有シートでの送信に失敗したため、ダウンロード方式にフォールバックします',
-            shareError,
-          )
-          // フォールスルーして下のダウンロード方式を試す
-        }
-      }
-
-      // PC（および共有シート非対応環境）向けのフォールバック。
       // 画像のダウンロードを終えてから投稿画面を開く順序にしている。
-      // スマホでXのintent URLへ遷移すると、多くの場合ネイティブのXアプリへ
-      // 丸ごと切り替わる（ブラウザがバックグラウンドになる）。この切り替えが
-      // ダウンロードより先に起きると、ダウンロード確認のダイアログ等が
-      // ユーザーの目に入らないまま放置され、画像が結局保存されずに終わって
-      // しまう（実際に報告された不具合）。ダウンロードは先に確実に済ませる。
-      //
-      // トレードオフ：window.open()をユーザー操作から時間を置いて呼ぶことになる
-      // ため、エクスポートに時間がかかった場合はポップアップブロックに
-      // 引っかかることがありうる（X・LINE等のアプリ内蔵ブラウザで特に起きやすい。
-      // 詳細は7章参照）。この場合でも画像のダウンロードは既に試みているため、
-      // 「画像が保存されないまま投稿画面だけ開く」場合より実害は小さいと判断した
-      // （window.open()の戻り値を見て、実際に開けたかどうかで案内を出し分ける。
-      // 下記参照）
+      // ダウンロードより先に投稿画面（別タブ）を開いてしまうと、環境によっては
+      // ダウンロード確認のダイアログ等がユーザーの目に入らないまま放置され、
+      // 画像が結局保存されずに終わってしまう事例があったため。
       downloadBlob(blob, EXPORT_FILE_NAME)
 
-      // この経路（PC）では画像を投稿欄に自動添付できないため、投稿画面に
+      // この経路では画像を投稿欄に自動添付できないため、投稿画面に
       // 切り替わった後もアプリ側のヒント文言に頼らず気づけるよう、投稿欄の
       // テキスト自体に添付を促す一言を含めておく（詳細はbuildTwitterIntentCaption
       // のコメント・7章参照）
@@ -210,10 +105,9 @@ export function ShareButtons({
       const opened = window.open(intentUrl, '_blank', 'noopener,noreferrer')
 
       // window.open()はポップアップブロック等で失敗するとnullを返す（例外は
-      // 投げない）。X・LINE等のアプリ内蔵ブラウザはこの種のブロックが起きやすく、
-      // 従来は失敗時も「投稿画面を開いた」という誤ったメッセージを出していた。
-      // 実際には開けていない可能性があるため、戻り値を見て案内を出し分ける
-      // （詳細は7章参照）。GA4のshareイベントも実際に開けた場合のみ送る
+      // 投げない）。エクスポートに時間がかかった場合等にまれに起こりうるため
+      // （詳細は7章参照）、戻り値を見て案内を出し分ける。GA4のshareイベントも
+      // 実際に開けた場合のみ送る
       if (opened) {
         trackEvent('share', { method: 'twitter_intent', item_count: itemCount })
         setMessage(
@@ -221,7 +115,7 @@ export function ShareButtons({
         )
       } else {
         setMessage(
-          'このブラウザでは投稿画面を開けませんでした（画像のダウンロードも失敗している可能性があります）。画面右上のメニューなどから「Safariで開く」を選んでからやり直してください。',
+          'このブラウザでは投稿画面を開けませんでした（画像のダウンロードも失敗している可能性があります）。もう一度お試しください。',
         )
       }
     } catch (error) {
@@ -251,27 +145,18 @@ export function ShareButtons({
           disabled={busy}
           className="rounded-full border border-[#D8D2E4] px-4 py-2 text-sm font-medium text-[#262230] transition hover:border-[#BFB4D6] disabled:opacity-50"
         >
-          {status === 'sharing'
-            ? '準備中…'
-            : shouldUseShareSheet
-              ? 'シェア'
-              : 'Xに投稿する'}
+          {status === 'sharing' ? '準備中…' : 'Xに投稿する'}
         </button>
       </div>
       {/*
-        PC（および共有シート非対応環境）向けのフォールバックは、画像を
-        ダウンロードしてから投稿画面を開くだけで、投稿欄への添付は自動化
-        されない。初見だと気づきにくいため、クリックする前から常にヒントを
-        出しておく。共有シートに委ねられる環境では、添付が自動で行われ
-        宛先もXに限らないためこのヒントは不要（共有シート自体が説明不要な
-        UIのため）。シェア操作直後にエラー等が起きた場合は、結果に応じた
-        メッセージに差し替える。
+        画像をダウンロードしてから投稿画面を開くだけで、投稿欄への添付は
+        自動化されない。初見だと気づきにくいため、クリックする前から常に
+        ヒントを出しておく。シェア操作直後にエラー等が起きた場合は、
+        結果に応じたメッセージに差し替える。
       */}
-      {(message ?? (shouldUseShareSheet ? null : PC_FALLBACK_HINT)) && (
-        <p className="max-w-xs text-center text-xs text-[#8D869B]">
-          {message ?? PC_FALLBACK_HINT}
-        </p>
-      )}
+      <p className="max-w-xs text-center text-xs text-[#8D869B]">
+        {message ?? PC_FALLBACK_HINT}
+      </p>
     </div>
   )
 }
