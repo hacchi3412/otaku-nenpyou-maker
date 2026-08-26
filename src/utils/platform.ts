@@ -11,34 +11,18 @@ export function isIOS(): boolean {
 }
 
 /**
- * navigator.share()に画像ファイルを渡せる環境かどうかを判定する。
- * OSの共有シート経由でXに限らず任意のアプリへ画像を渡せるようにするための機能検出。
- * UA判定ではなく機能検出にしているのは、PCブラウザでも将来対応が広がる可能性があるため。
- * 現状は主にiOS Safari / Androidのブラウザでtrueになり、多くのデスクトップブラウザではfalseになる。
- *
- * ただし、この関数単体では「PCの共有シートにXが登録されていない」という
- * 問題までは検出できない（詳細はisMobileDeviceのコメント・7章参照）。
- */
-export function canShareFiles(): boolean {
-  if (typeof navigator === 'undefined' || !navigator.canShare) {
-    return false
-  }
-  try {
-    const probe = new File([''], 'probe.png', { type: 'image/png' })
-    return navigator.canShare({ files: [probe] })
-  } catch {
-    return false
-  }
-}
-
-/**
  * モバイル端末（スマホ・タブレット）かどうかの判定。
- * PC（Windows等）でもcanShareFiles()がtrueになるケースが増えてきているが、
- * PCのOS標準共有シートにはそもそもX（Twitter）が登録されていないことが多く、
- * 「Xへの投稿」を主目的とする「シェア」ボタンで共有シートを開いても
- * 宛先候補にXが出てこない、という実機報告があった（詳細は7章参照）。
- * そのため「共有シートを使うかどうか」はcanShareFiles()の機能検出だけでなく、
- * モバイル端末かどうかも合わせて判定する必要がある。
+ * `PreviewPanel`が保存・シェアの方式（`MobileCompleteFlow`／`ShareButtons`の
+ * どちらを使うか）を振り分けるのに使う（詳細はMobileCompleteFlowのコメント・
+ * 7章参照）。
+ *
+ * かつてはこれに加えてnavigator.share()の機能検出（`canShareFiles()`）も
+ * 組み合わせて「共有シートを使うか」を判定していたが、X・LINEのアプリ内蔵
+ * ブラウザではWeb Share API・ファイルダウンロードのどちらも機能しないことが
+ * あり、かつXのアプリ内蔵ブラウザはUser-Agentに目印がなく検出もできない
+ * ため、環境判定に依存する実装そのものをやめ、モバイルでは常に
+ * `MobileCompleteFlow`（長押し保存＋Xに投稿するリンク）に統一した経緯が
+ * ある（詳細は7章参照）。
  */
 export function isMobileDevice(): boolean {
   return isIOS() || /Android/.test(navigator.userAgent)

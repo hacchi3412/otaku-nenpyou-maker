@@ -16,15 +16,13 @@ export function buildShareCaption(displayName: string): string {
 }
 
 /**
- * PC（デスクトップ）でXの投稿画面を開く際に使うキャプション。
- * この経路（`shouldUseShareSheet`がfalseの場合）は共有シートを介さず、
- * 画像は先にダウンロードされるだけで、投稿欄への添付はユーザーの手作業に
- * なる。投稿画面に切り替わった後はアプリ側の画面（ボタン下のヒント文言）が
- * 見えなくなり、添付を忘れたまま投稿してしまうことがあるという指摘を
- * 受けたため、投稿欄のテキスト自体に添付を促す一言を含めておく
- * （詳細は7章参照）。
- * モバイルの共有シート経由（`navigator.share()`）では画像が自動添付される
- * ため、この一言は不要（`buildShareCaption`をそのまま使う）。
+ * Xの投稿画面（intent URL）を開く際に使うキャプション。
+ * PC（`ShareButtons`）・モバイル（`MobileCompleteFlow`）のどちらの経路でも、
+ * 画像はダウンロードまたは長押し保存されるだけで、投稿欄への添付は
+ * ユーザーの手作業になる。投稿画面に切り替わった後はアプリ側の画面
+ * （ボタン下のヒント文言・長押し案内）が見えなくなり、添付を忘れたまま
+ * 投稿してしまうことがあるという指摘を受けたため、投稿欄のテキスト自体に
+ * 添付を促す一言を含めておく（詳細は7章参照）。
  */
 export function buildTwitterIntentCaption(displayName: string): string {
   return `${buildShareCaption(displayName)}\n（画像はダウンロードされたものを添付してください）`
