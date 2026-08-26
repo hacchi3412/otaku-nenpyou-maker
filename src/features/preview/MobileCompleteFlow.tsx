@@ -1,4 +1,5 @@
 import { useState, type RefObject } from 'react'
+import { XLogoIcon } from '../../components/XLogoIcon'
 import { buildTwitterIntentCaption, SITE_URL } from '../../constants/share'
 import { trackEvent } from '../../utils/analytics'
 import { exportNodeAsPngBlob } from '../../utils/exportImage'
@@ -26,10 +27,11 @@ type Phase = 'editing' | 'generating' | 'done'
  * 機能でありJSの高度なAPIに依存しないため、Web Share API・ファイル
  * ダウンロードのどちらも使えない環境でも確実に機能する。
  *
- * 「Xに投稿する」もJSの`window.open()`（非同期に呼ぶとポップアップ
+ * 「ポストする」ボタンもJSの`window.open()`（非同期に呼ぶとポップアップ
  * ブロックの対象になりうることが判明した。詳細は7章参照）を使わず、
  * 実体が`<a href>`の通常のリンクにすることで、アプリ内蔵ブラウザを含めて
- * どこでも確実に開けるようにしている。
+ * どこでも確実に開けるようにしている。Xの公式ロゴアイコン（`XLogoIcon`）を
+ * 添え、テキストだけでは伝わりにくい「投稿先はX」という情報を補っている
  *
  * 通常のモバイルSafari/Chrome等、Web Share APIが使える環境向けの分岐
  * （共有シート経由での自動添付）は、環境判定そのものに起因する不具合を
@@ -100,20 +102,30 @@ export function MobileCompleteFlow({
           <p className="font-kaku text-sm text-[#6B6375]">
             ▲画像を長押しで保存してください
           </p>
-          <a
-            href={intentUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() =>
-              trackEvent('share', {
-                method: 'twitter_intent',
-                item_count: itemCount,
-              })
-            }
-            className="mt-2 rounded-full bg-[#262230] px-8 py-2.5 text-sm font-medium text-white transition hover:bg-[#3A3448]"
-          >
-            Xに投稿する
-          </a>
+
+          <div className="mt-4 flex flex-col items-center gap-1">
+            <p className="font-maru text-sm font-bold text-[#262230]">
+              完成した年表をシェアしよう！
+            </p>
+            <p className="text-xs text-[#8D869B]">
+              （保存した画像を添付してポストしてね）
+            </p>
+            <a
+              href={intentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() =>
+                trackEvent('share', {
+                  method: 'twitter_intent',
+                  item_count: itemCount,
+                })
+              }
+              className="mt-2 flex items-center gap-2 rounded-full bg-[#262230] px-8 py-2.5 text-sm font-medium text-white transition hover:bg-[#3A3448]"
+            >
+              <XLogoIcon className="h-4 w-4" />
+              ポストする
+            </a>
+          </div>
         </div>
       </div>
     )
