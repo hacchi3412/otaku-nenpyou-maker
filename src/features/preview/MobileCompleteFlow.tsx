@@ -37,6 +37,14 @@ type Phase = 'editing' | 'generating' | 'done'
  * （共有シート経由での自動添付）は、環境判定そのものに起因する不具合を
  * 繰り返し踏んだ経緯（詳細は7章参照）を踏まえてあえて廃止し、常にこの
  * フローに統一している。
+ *
+ * 「ポストする」タップ後、即座に投稿画面へ遷移せず、いったん
+ * 「画像の保存はされていますか？」という確認オーバーレイを挟む（詳細は
+ * 7章参照）。他社の類似メーカー（コアラのマーチくんメーカー等）を参考に
+ * した、保存し忘れたままシェアしてしまう事故を防ぐためのワンクッション。
+ * 確認オーバーレイの「ポストする」ボタンが実際の投稿画面を開く本体の
+ * `<a href>`リンクであり続けるため、ポップアップブロック対策（`window.open()`
+ * を避け実体をリンクにする、という上記の方針）はそのまま維持している。
  */
 export function MobileCompleteFlow({
   exportTargetRef,
@@ -46,6 +54,7 @@ export function MobileCompleteFlow({
   const [phase, setPhase] = useState<Phase>('editing')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [confirmingShare, setConfirmingShare] = useState(false)
 
   const handleComplete = async () => {
     if (!exportTargetRef.current) return
@@ -75,6 +84,7 @@ export function MobileCompleteFlow({
     }
     setImageUrl(null)
     setPhase('editing')
+    setConfirmingShare(false)
   }
 
   if (phase === 'done' && imageUrl) {
@@ -110,23 +120,55 @@ export function MobileCompleteFlow({
             <p className="text-xs text-[#8D869B]">
               （保存した画像を添付してポストしてね）
             </p>
-            <a
-              href={intentUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() =>
-                trackEvent('share', {
-                  method: 'twitter_intent',
-                  item_count: itemCount,
-                })
-              }
+            <button
+              type="button"
+              onClick={() => setConfirmingShare(true)}
               className="mt-2 flex items-center gap-2 rounded-full bg-[#262230] px-8 py-2.5 text-sm font-medium text-white transition hover:bg-[#3A3448]"
             >
               <XLogoIcon className="h-4 w-4" />
               ポストする
-            </a>
+            </button>
           </div>
         </div>
+
+        {confirmingShare && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 px-6">
+            <div className="w-full max-w-xs rounded-2xl bg-white p-5 text-center shadow-lg">
+              <p className="font-maru text-base font-bold text-[#262230]">
+                画像の保存はされていますか？
+              </p>
+              <ul className="mt-3 space-y-1 text-left text-sm text-[#6B6375]">
+                <li>①画像を保存しよう</li>
+                <li>②SNSボタンを押してシェア</li>
+              </ul>
+              <div className="mt-5 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setConfirmingShare(false)}
+                  className="rounded-full border border-[#D8D2E4] px-5 py-2 text-sm font-medium text-[#6B6375] transition hover:bg-[#F0ECF5]"
+                >
+                  戻る
+                </button>
+                <a
+                  href={intentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    trackEvent('share', {
+                      method: 'twitter_intent',
+                      item_count: itemCount,
+                    })
+                    setConfirmingShare(false)
+                  }}
+                  className="flex items-center gap-2 rounded-full bg-[#262230] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#3A3448]"
+                >
+                  <XLogoIcon className="h-4 w-4" />
+                  ポストする
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
