@@ -91,6 +91,18 @@ function App() {
     window.setTimeout(rescrollAfterKeyboard, 400)
   }
 
+  // 「入力欄をどんどん書き進めると、タブが画面上部にあり何度もスクロールして
+  // 戻らないと切り替えられない」という指摘を受け、タブ切り替え時は常に
+  // ページ先頭までスクロールし直すようにした。タブバー自体もsticky
+  // （下記JSX）にして常時タップできるようにしているが、切り替え後の
+  // スクロール位置をそのままにすると、切り替え先のタブで意図しない位置
+  // （下の方の余白など）が表示されたままになりうるため、あわせて対応した
+  // （詳細は7章参照）
+  const handleMobileTabChange = (tab: MobileTab) => {
+    setMobileTab(tab)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const closeTutorial = () => setTutorialSeen(true)
   const advanceTutorial = () => {
     if (tutorialStep === 1) {
@@ -109,11 +121,18 @@ function App() {
       <Header onResetAll={resetAll} />
 
       <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
-        {/* スマホ：入力／プレビューのタブ切り替え */}
-        <div className="mb-4 flex gap-2 rounded-full bg-white p-1 shadow-sm lg:hidden">
+        {/*
+          スマホ：入力／プレビューのタブ切り替え。
+          年カードを下までスクロールしてもタブへすぐ手が届くよう、
+          スクロールしても画面上部に貼り付くsticky指定にしている
+          （詳細は7章参照）。z-20はTutorialOverlay・MobileCompleteFlow
+          （いずれもz-[100]）より低いままにし、それらが表示された際は
+          きちんと覆われるようにしている
+        */}
+        <div className="sticky top-2 z-20 mb-4 flex gap-2 rounded-full bg-white p-1 shadow-sm lg:hidden">
           <button
             type="button"
-            onClick={() => setMobileTab('input')}
+            onClick={() => handleMobileTabChange('input')}
             className={`flex-1 rounded-full py-2 text-sm font-medium transition ${
               mobileTab === 'input'
                 ? 'bg-[#262230] text-white'
@@ -124,7 +143,7 @@ function App() {
           </button>
           <button
             type="button"
-            onClick={() => setMobileTab('preview')}
+            onClick={() => handleMobileTabChange('preview')}
             className={`flex-1 rounded-full py-2 text-sm font-medium transition ${
               mobileTab === 'preview'
                 ? 'bg-[#262230] text-white'
@@ -152,12 +171,25 @@ function App() {
             ref={previewSectionRef}
             className={mobileTab === 'preview' ? 'block' : 'hidden lg:block'}
           >
-            <PreviewPanel
-              years={years}
-              displayName={displayName}
-              onDisplayNameChange={setDisplayName}
-              onEditItem={handleEditItemFromPreview}
-            />
+            {/*
+              PCでは、入力欄が縦に長くなるほどプレビューが早々に画面外へ
+              流れてしまい確認しづらいという指摘を受け、PC幅（lg:）のみ
+              スクロールに追従するsticky指定にしている（詳細は7章参照）。
+              sticky自体はこの内側のdivに付け、外側のsection（グリッド
+              アイテム）は従来通りグリッドの行の高さいっぱいに伸びたまま
+              にしておく必要がある（sectionの高さを内容に合わせて縮めて
+              しまうと、sticky先が入力欄と同じ高さ分だけ「動ける余地」を
+              失い、追従しなくなるため）。スマホでは1カラム表示のため
+              位置固定は不要（lg:のみ有効）
+            */}
+            <div className="lg:sticky lg:top-4">
+              <PreviewPanel
+                years={years}
+                displayName={displayName}
+                onDisplayNameChange={setDisplayName}
+                onEditItem={handleEditItemFromPreview}
+              />
+            </div>
           </section>
         </div>
       </main>
