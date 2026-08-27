@@ -85,7 +85,7 @@ export function SlotRow({
       setIsMoving(false)
       setMoveError(null)
     } else {
-      setMoveError(`${toYear}年はすでに上限（3件）まで入力されています`)
+      setMoveError(`${toYear}年はもう上限（3件）まで入力されてるよ`)
     }
   }
 
@@ -136,7 +136,7 @@ export function SlotRow({
               renamePrompt.years.length > 1
                 ? `〜${renamePrompt.years[renamePrompt.years.length - 1]}`
                 : ''
-            }年にも続いています`}
+            }年にも続いてるよ`}
           </span>
           <button
             type="button"
@@ -185,7 +185,7 @@ export function SlotRow({
                 タップで自由に変更できることとあわせて一言で説明する。
               */}
               <p className="mb-1 text-xs text-[#8D869B]">
-                カラー（同じ名前の項目は自動で揃います）
+                カラー（同じ名前の項目は自動で揃うよ）
               </p>
               <div className="flex gap-1.5">
                 {SWATCH_COLORS.map((swatch) => (

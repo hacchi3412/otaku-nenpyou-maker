@@ -44,7 +44,7 @@ export function TimelineChart({
         <p className="font-kaku text-sm text-[#A79FC2]">
           年ごとにハマったものやコメントを入力すると
           <br />
-          ここに年表が表示されます
+          ここに年表が表示されるよ
         </p>
       </div>
     )

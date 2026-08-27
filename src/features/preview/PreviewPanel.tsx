@@ -118,7 +118,7 @@ export function PreviewPanel({
       {visibleYears.length === 0 && (
         <div className="mt-4 flex flex-col items-center gap-2">
           <p className="font-kaku text-xs text-[#A79FC2]">
-            こんな年表が作れます（サンプル）
+            こんな年表が作れるよ（サンプル）
           </p>
           <img
             src={`${import.meta.env.BASE_URL}ogp.png`}

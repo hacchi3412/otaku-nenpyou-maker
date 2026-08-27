@@ -25,7 +25,7 @@ export function buildShareCaption(displayName: string): string {
 export function buildTwitterIntentCaption(displayName: string): string {
   return [
     buildShareCaption(displayName),
-    '🌟作成した画像を添付してシェアしてね🌟',
+    '🌟作成した画像を添付してね🌟',
     '',
     '---',
     '',
