@@ -203,7 +203,7 @@ function App() {
             step={1}
             totalSteps={2}
             title="ここから年表を作ろう"
-            description="ハマってきたものを、年ごとに入力してみよう。作品でも、キャラでも、ジャンルでも自由だよ。"
+            description="ハマってきたものを、年ごとに入力してみよう。作品でも、キャラでも、ジャンルでも自由です。"
             nextLabel="次へ"
             onNext={advanceTutorial}
             onClose={closeTutorial}
@@ -214,7 +214,7 @@ function App() {
             step={2}
             totalSteps={2}
             title="入力するとリアルタイムで反映"
-            description="入力した内容が、ここに年表画像としてすぐに反映されるよ。完成したら画像を保存したり、Xでシェアしたりできるよ。"
+            description="入力した内容が、ここに年表画像としてすぐに反映されます。完成したら画像として保存したり、Xでシェアしたりできます。"
             nextLabel="はじめる"
             onNext={advanceTutorial}
             onClose={closeTutorial}

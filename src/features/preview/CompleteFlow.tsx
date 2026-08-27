@@ -45,7 +45,7 @@ type Phase = 'editing' | 'generating' | 'done'
  * 添え、テキストだけでは伝わりにくい「投稿先はX」という情報を補っている。
  *
  * 「ポストする」タップ後、即座に投稿画面へ遷移せず、いったん
- * 「画像は保存した？」という確認オーバーレイを挟む。保存し
+ * 「画像の保存はされていますか？」という確認オーバーレイを挟む。保存し
  * 忘れたままシェアしてしまう事故を防ぐためのワンクッション。確認
  * オーバーレイの「ポストする」ボタンが実際の投稿画面を開く本体の
  * `<a href>`リンクであり続けるため、ポップアップブロック対策はそのまま
@@ -94,7 +94,7 @@ export function CompleteFlow({
       })
     } catch (error) {
       console.error(error)
-      setErrorMessage('画像の生成に失敗しちゃった。もう一度試してみてね。')
+      setErrorMessage('画像の生成に失敗しました。もう一度お試しください。')
       setPhase('editing')
     }
   }
@@ -160,11 +160,11 @@ export function CompleteFlow({
           <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 px-6">
             <div className="w-full max-w-xs rounded-2xl bg-white p-5 text-center shadow-lg">
               <p className="font-maru text-base font-bold text-[#262230]">
-                画像は保存した？
+                画像の保存はされていますか？
               </p>
               <ul className="mt-3 space-y-1 text-left text-sm text-[#6B6375]">
                 <li>①画像を保存しよう</li>
-                <li>②SNSボタンを押してシェアしよう</li>
+                <li>②SNSボタンを押してシェア</li>
               </ul>
               <div className="mt-5 flex items-center justify-center gap-3">
                 <button
