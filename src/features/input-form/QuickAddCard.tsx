@@ -42,11 +42,11 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
 
     const newItemId = onAdd(year, trimmed)
     if (newItemId) {
-      setMessage(`${year}年に「${trimmed}」を追加しました`)
+      setMessage(`${year}年に「${trimmed}」を追加したよ`)
       setAddedItemId(newItemId)
       setTitle('')
     } else {
-      setMessage(`${year}年はすでに上限（3件）まで入力されています`)
+      setMessage(`${year}年はもう上限（3件）まで入力されてるよ`)
       setAddedItemId(null)
     }
   }
@@ -70,7 +70,7 @@ export function QuickAddCard({ years, onAdd }: QuickAddCardProps) {
         ⚡ クイック入力
       </span>
       <p className="mt-1.5 text-[11px] leading-relaxed text-[#8D869B]">
-        順番はバラバラでOK。思い出した順に追加できます
+        順番はバラバラでOK。思い出した順に追加できるよ
       </p>
 
       <div className="mt-2.5 flex gap-2">
