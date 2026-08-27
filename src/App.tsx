@@ -125,7 +125,7 @@ function App() {
           スマホ：入力／プレビューのタブ切り替え。
           年カードを下までスクロールしてもタブへすぐ手が届くよう、
           スクロールしても画面上部に貼り付くsticky指定にしている
-          （詳細は7章参照）。z-20はTutorialOverlay・MobileCompleteFlow
+          （詳細は7章参照）。z-20はTutorialOverlay・CompleteFlow
           （いずれもz-[100]）より低いままにし、それらが表示された際は
           きちんと覆われるようにしている
         */}

@@ -1,10 +1,13 @@
-import { useState, type RefObject } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
 import { XLogoIcon } from '../../components/XLogoIcon'
 import { buildTwitterIntentCaption, SITE_URL } from '../../constants/share'
 import { trackEvent } from '../../utils/analytics'
-import { exportNodeAsPngBlob } from '../../utils/exportImage'
+import {
+  exportNodeAsPngBlob,
+  prefetchFontEmbedCSS,
+} from '../../utils/exportImage'
 
-interface MobileCompleteFlowProps {
+interface CompleteFlowProps {
   /** 画像として書き出す対象（幅固定の年表本体）への参照 */
   exportTargetRef: RefObject<HTMLElement | null>
   /** シェア文言に使う表示名（空文字なら「わたし」表示）。見出しと同じ値を使う */
@@ -16,45 +19,63 @@ interface MobileCompleteFlowProps {
 type Phase = 'editing' | 'generating' | 'done'
 
 /**
- * モバイル専用の「完成」フロー（詳細は7章参照）。
+ * 「完成！」ボタンから始まる保存・シェアのフロー（詳細は7章参照）。
  *
- * 背景：X・LINEのアプリ内蔵ブラウザ（WebView）では、Web Share API・
- * `<a download>`によるファイルダウンロードのいずれも機能しないことが多い。
- * X（Twitter）のアプリ内蔵ブラウザはUser-Agentに一切目印が付かず検出も
- * できないため、「環境を判定して分岐する」実装ではこの穴を埋めきれない。
- * そこでモバイルでは、環境を問わず一律で「完成した画像をその場に大きく
- * 表示し、長押しで保存してもらう」方式に統一した。長押し保存はOS標準の
- * 機能でありJSの高度なAPIに依存しないため、Web Share API・ファイル
- * ダウンロードのどちらも使えない環境でも確実に機能する。
+ * 元々はモバイル専用（`MobileCompleteFlow`）で、PCは別コンポーネント
+ * （`ShareButtons`。ダウンロードボタン＋Web Share APIフォールバック）を
+ * 使っていた。背景：X・LINEのアプリ内蔵ブラウザ（WebView）では、Web Share
+ * API・`<a download>`によるファイルダウンロードのいずれも機能しないことが
+ * 多く、X（Twitter）のアプリ内蔵ブラウザはUser-Agentに一切目印が付かず
+ * 検出もできないため、「環境を判定して分岐する」実装ではこの穴を埋め
+ * きれない。そこでまずモバイルを、環境を問わず一律で「完成した画像を
+ * その場に大きく表示し、長押しで保存してもらう」方式に統一した。
+ *
+ * その後、他社の類似メーカー（コアラのマーチくんメーカー等）を見て
+ *「PCも同じ考え方（画像を直接見せて手動で保存してもらう）で十分では」
+ * という判断に至り、PC・モバイルの分岐自体を廃止してこのコンポーネントに
+ * 一本化した。PCの保存操作は右クリック→「名前を付けて画像を保存」等の
+ * OS標準機能に委ね、長押しと同様にJSの高度なAPIに依存しないため、
+ * Web Share API・ファイルダウンロードのどちらも使えない環境でも確実に
+ * 機能する長押し保存の考え方をPCにもそのまま適用できる。
  *
  * 「ポストする」ボタンもJSの`window.open()`（非同期に呼ぶとポップアップ
  * ブロックの対象になりうることが判明した。詳細は7章参照）を使わず、
  * 実体が`<a href>`の通常のリンクにすることで、アプリ内蔵ブラウザを含めて
  * どこでも確実に開けるようにしている。Xの公式ロゴアイコン（`XLogoIcon`）を
- * 添え、テキストだけでは伝わりにくい「投稿先はX」という情報を補っている
- *
- * 通常のモバイルSafari/Chrome等、Web Share APIが使える環境向けの分岐
- * （共有シート経由での自動添付）は、環境判定そのものに起因する不具合を
- * 繰り返し踏んだ経緯（詳細は7章参照）を踏まえてあえて廃止し、常にこの
- * フローに統一している。
+ * 添え、テキストだけでは伝わりにくい「投稿先はX」という情報を補っている。
  *
  * 「ポストする」タップ後、即座に投稿画面へ遷移せず、いったん
- * 「画像の保存はされていますか？」という確認オーバーレイを挟む（詳細は
- * 7章参照）。他社の類似メーカー（コアラのマーチくんメーカー等）を参考に
- * した、保存し忘れたままシェアしてしまう事故を防ぐためのワンクッション。
- * 確認オーバーレイの「ポストする」ボタンが実際の投稿画面を開く本体の
- * `<a href>`リンクであり続けるため、ポップアップブロック対策（`window.open()`
- * を避け実体をリンクにする、という上記の方針）はそのまま維持している。
+ * 「画像の保存はされていますか？」という確認オーバーレイを挟む。保存し
+ * 忘れたままシェアしてしまう事故を防ぐためのワンクッション。確認
+ * オーバーレイの「ポストする」ボタンが実際の投稿画面を開く本体の
+ * `<a href>`リンクであり続けるため、ポップアップブロック対策はそのまま
+ * 維持している。
+ *
+ * 保存が実際に完了したかはPC・モバイルどちらも手動操作（右クリック保存・
+ * 長押し保存）でありJSから検知できないため、GA4の`image_save`イベントは
+ * 「完成ビューが表示された（保存操作ができる状態になった）」ことを保存の
+ * 代理指標として計測する。環境を判定しない方式に統一したことに合わせ、
+ * `method`もPC/モバイルを区別しない`manual_save`を使う。
  */
-export function MobileCompleteFlow({
+export function CompleteFlow({
   exportTargetRef,
   displayName,
   itemCount,
-}: MobileCompleteFlowProps) {
+}: CompleteFlowProps) {
   const [phase, setPhase] = useState<Phase>('editing')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [confirmingShare, setConfirmingShare] = useState(false)
+
+  // 「完成！」ボタンが押される前（プレビュー表示中）にフォント埋め込み用CSSの
+  // 取得（数百リクエスト規模になりうる重い処理。詳細はexportImage.tsのコメント
+  // 参照）を先読みしておくことで、実際に押された時点ではキャッシュ済みの
+  // 状態にし、「生成中…」の待ち時間を減らす
+  useEffect(() => {
+    if (exportTargetRef.current) {
+      prefetchFontEmbedCSS(exportTargetRef.current)
+    }
+  }, [exportTargetRef])
 
   const handleComplete = async () => {
     if (!exportTargetRef.current) return
@@ -64,11 +85,11 @@ export function MobileCompleteFlow({
       const blob = await exportNodeAsPngBlob(exportTargetRef.current)
       setImageUrl(URL.createObjectURL(blob))
       setPhase('done')
-      // 長押し保存はOS側の操作のため、実際に保存されたかどうかはJSから
-      // 検知できない。「完成画面が表示された（長押しで保存できる状態に
-      // なった）」ことを保存の代理指標として計測する（詳細は7章参照）
+      // 保存が実際に完了したかはJSから検知できない。「完成画面が表示された
+      // （保存操作ができる状態になった）」ことを保存の代理指標として
+      // 計測する（詳細は7章参照）
       trackEvent('image_save', {
-        method: 'long_press',
+        method: 'manual_save',
         item_count: itemCount,
       })
     } catch (error) {
@@ -109,8 +130,12 @@ export function MobileCompleteFlow({
             alt="完成したオタク年表"
             className="w-full max-w-md rounded-lg border border-[#E5E0EE] shadow-sm"
           />
-          <p className="font-kaku text-sm text-[#6B6375]">
-            ▲画像を長押しで保存してください
+          <p className="font-kaku text-center text-sm text-[#6B6375]">
+            スマホの方は画像長押し
+            <br />
+            PCの方は画像右クリック
+            <br />
+            で保存してね
           </p>
 
           <div className="mt-4 flex flex-col items-center gap-1">

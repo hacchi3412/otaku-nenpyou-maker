@@ -1,19 +1,17 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import {
   DEFAULT_DISPLAY_NAME,
   DISPLAY_NAME_MAX_LENGTH,
 } from '../../constants/timeline'
 import type { YearEntry } from '../../types/timeline'
-import { isMobileDevice } from '../../utils/platform'
 import {
   computeLaneSegments,
   getChartWidth,
   getUsedLaneCount,
   getVisibleYears,
 } from '../../utils/timelineLayout'
-import { MobileCompleteFlow } from './MobileCompleteFlow'
+import { CompleteFlow } from './CompleteFlow'
 import { ScaledCanvas } from './ScaledCanvas'
-import { ShareButtons } from './ShareButtons'
 import { TimelineChart } from './TimelineChart'
 
 interface PreviewPanelProps {
@@ -47,9 +45,6 @@ export function PreviewPanel({
   onEditItem,
 }: PreviewPanelProps) {
   const exportTargetRef = useRef<HTMLDivElement>(null)
-  // 保存・シェアの方式（後述のMobileCompleteFlow・ShareButtonsどちらを使うか）は
-  // 実行環境で決まりセッション中に変わらないため、初回レンダー時に一度だけ判定する
-  const [isMobile] = useState(() => isMobileDevice())
 
   const visibleYears = getVisibleYears(years)
   const laneCount = getUsedLaneCount(computeLaneSegments(visibleYears))
@@ -134,24 +129,16 @@ export function PreviewPanel({
       )}
 
       {/*
-        モバイルとPCで保存・シェアの方式を分けている（詳細はMobileCompleteFlow
-        のコメント・7章参照）。モバイルはX・LINEのアプリ内蔵ブラウザを含めて
-        環境を問わず「完成画面＋長押し保存＋Xに投稿する」に統一し、PCは
-        従来通りWeb Share API・ダウンロード＋投稿画面を開く方式を使う
+        保存・シェアはPC・モバイルで方式を分けず一律にしている（詳細は
+        CompleteFlowのコメント・7章参照）。X・LINEのアプリ内蔵ブラウザを
+        含めて環境を問わず「完成画面＋手動保存（長押し／右クリック）＋
+        Xに投稿する」に統一した
       */}
-      {isMobile ? (
-        <MobileCompleteFlow
-          exportTargetRef={exportTargetRef}
-          displayName={displayName}
-          itemCount={itemCount}
-        />
-      ) : (
-        <ShareButtons
-          exportTargetRef={exportTargetRef}
-          displayName={displayName}
-          itemCount={itemCount}
-        />
-      )}
+      <CompleteFlow
+        exportTargetRef={exportTargetRef}
+        displayName={displayName}
+        itemCount={itemCount}
+      />
     </div>
   )
 }
