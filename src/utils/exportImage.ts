@@ -89,20 +89,3 @@ export async function exportNodeAsPngBlob(node: HTMLElement): Promise<Blob> {
   }
   return blob
 }
-
-/** Blobをファイルとしてブラウザにダウンロードさせる */
-export function downloadBlob(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = fileName
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-
-  // click()直後に同期的にrevokeすると、ブラウザが実際にBlobを読みに行く前に
-  // URLが無効になってしまうことがある（シークレット/プライベートブラウジングでは
-  // ダウンロード前の追加のセキュリティチェックなどで読み込みが遅れやすく、
-  // このタイミング競合が起きやすい）。十分な余裕を持たせてから解放する。
-  setTimeout(() => URL.revokeObjectURL(url), 2000)
-}

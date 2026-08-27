@@ -1,8 +1,5 @@
 import { DEFAULT_DISPLAY_NAME } from './timeline'
 
-/** 保存する画像のファイル名 */
-export const EXPORT_FILE_NAME = 'オタク年表.png'
-
 /**
  * シェア時のキャプションを組み立てる。
  * 年表見出しと同じ表示名（未入力時は「わたし」）を使い、見出しとシェア文言の
@@ -17,15 +14,14 @@ export function buildShareCaption(displayName: string): string {
 
 /**
  * Xの投稿画面（intent URL）を開く際に使うキャプション。
- * PC（`ShareButtons`）・モバイル（`MobileCompleteFlow`）のどちらの経路でも、
- * 画像はダウンロードまたは長押し保存されるだけで、投稿欄への添付は
- * ユーザーの手作業になる。投稿画面に切り替わった後はアプリ側の画面
- * （ボタン下のヒント文言・長押し案内）が見えなくなり、添付を忘れたまま
- * 投稿してしまうことがあるという指摘を受けたため、投稿欄のテキスト自体に
- * 添付を促す一言を含めておく（詳細は7章参照）。
+ * `CompleteFlow`はPC・モバイルどちらも、画像は手動保存（長押し／右クリック）
+ * されるだけで、投稿欄への添付はユーザーの手作業になる。投稿画面に
+ * 切り替わった後はアプリ側の画面（保存案内・長押し案内）が見えなくなり、
+ * 添付を忘れたまま投稿してしまうことがあるという指摘を受けたため、投稿欄の
+ * テキスト自体に添付を促す一言を含めておく（詳細は7章参照）。
  */
 export function buildTwitterIntentCaption(displayName: string): string {
-  return `${buildShareCaption(displayName)}\n（画像はダウンロードされたものを添付してください）`
+  return `${buildShareCaption(displayName)}\n（保存した画像を添付してください）`
 }
 
 /**
