@@ -11,6 +11,38 @@ export function isIOS(): boolean {
 }
 
 /**
+ * デスクトップ版Safari（タッチ非対応の通常のMac）の判定。
+ * `isIOS()`は「iPhone/iPad」または「タッチ対応のMacIntel（新しめの
+ * iPadOSがMacを名乗る場合）」しか見ないため、タッチのない通常のMacの
+ * Safariは対象に含まれない。`needsFontEmbedWorkaround()`がこれを
+ * 補うために使う（詳細はそちらのコメント・7章参照）。
+ * Chrome・Edge・Android系ブラウザもUser-Agentに"Safari"の文字列を含む
+ * ため、それらに含まれがちな目印（chrome・android）が先に現れないことを
+ * 確認する定番の判定方法を使う。
+ */
+function isDesktopSafari(): boolean {
+  const ua = navigator.userAgent
+  return /^((?!chrome|android).)*safari/i.test(ua)
+}
+
+/**
+ * 画像書き出し時のWebKit特有のフォント埋め込みバグ（詳細は
+ * exportImage.tsのコメント参照）の対象になりうるかどうかの判定。
+ * iOS（iPhone・iPad。載っているブラウザの種類を問わずすべてWebKit
+ * エンジンで動く）、またはデスクトップ版Safariが対象。
+ *
+ * かつてはこのバグへの対策を`isIOS()`のみで判定していたが、PC・モバイルの
+ * 保存方式を統一しPCも同じ書き出し処理を通るようになったことで、
+ * デスクトップ版Safari（macOS、タッチなし）がこの判定から漏れている
+ * ことに気づいた。デスクトップ版Safariも実体はiOSと同じWebKitエンジンで
+ * あり、同種のバグが起こりうるため、`isIOS()`だけでなくこちらも
+ * 判定に含める必要がある（詳細は7章参照）。
+ */
+export function needsFontEmbedWorkaround(): boolean {
+  return isIOS() || isDesktopSafari()
+}
+
+/**
  * モバイル端末（スマホ・タブレット）かどうかの判定。
  * `CompleteFlow`が画像の保存方法の案内文（長押し／右クリック）を出し分ける
  * のに使う（詳細は7章参照）。
