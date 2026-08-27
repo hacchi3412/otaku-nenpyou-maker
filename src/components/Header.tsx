@@ -56,8 +56,8 @@ export function Header({ onResetAll }: HeaderProps) {
       */}
       <ConfirmDialog
         open={confirmOpen}
-        title="年表データを全部消しちゃう？"
-        description="入力した内容が全部消えて、最初の状態に戻るよ。元に戻せないから気をつけてね。"
+        title="年表データをすべて削除しますか？"
+        description="入力した内容がすべて削除され、初期状態に戻ります。この操作は取り消せません。"
         confirmLabel="全部消す"
         cancelLabel="キャンセル"
         onConfirm={handleConfirm}
