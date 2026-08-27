@@ -6,6 +6,7 @@ import {
   exportNodeAsPngBlob,
   prefetchFontEmbedCSS,
 } from '../../utils/exportImage'
+import { isMobileDevice } from '../../utils/platform'
 
 interface CompleteFlowProps {
   /** 画像として書き出す対象（幅固定の年表本体）への参照 */
@@ -45,7 +46,7 @@ type Phase = 'editing' | 'generating' | 'done'
  * 添え、テキストだけでは伝わりにくい「投稿先はX」という情報を補っている。
  *
  * 「ポストする」タップ後、即座に投稿画面へ遷移せず、いったん
- * 「画像の保存はされていますか？」という確認オーバーレイを挟む。保存し
+ * 「画像の保存はしましたか？」という確認オーバーレイを挟む。保存し
  * 忘れたままシェアしてしまう事故を防ぐためのワンクッション。確認
  * オーバーレイの「ポストする」ボタンが実際の投稿画面を開く本体の
  * `<a href>`リンクであり続けるため、ポップアップブロック対策はそのまま
@@ -56,6 +57,13 @@ type Phase = 'editing' | 'generating' | 'done'
  * 「完成ビューが表示された（保存操作ができる状態になった）」ことを保存の
  * 代理指標として計測する。環境を判定しない方式に統一したことに合わせ、
  * `method`もPC/モバイルを区別しない`manual_save`を使う。
+ *
+ * 保存の「案内文」（長押し／右クリック）だけは`isMobileDevice()`で
+ * 出し分けている。動作そのものをこの判定で分岐していた頃（PC・モバイルで
+ * 別コンポーネントを使う等）とは異なり、あくまで表示するヒント文言だけの
+ * 話であるため、万一判定を誤っても実際の保存操作自体は変わらず動く
+ * （実害がない）。この違いから、環境判定への依存を避けてきたこれまでの
+ * 方針とは矛盾しないと判断した（詳細は`isMobileDevice`のコメント・7章参照）。
  */
 export function CompleteFlow({
   exportTargetRef,
@@ -66,6 +74,9 @@ export function CompleteFlow({
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [confirmingShare, setConfirmingShare] = useState(false)
+  // 保存方法の案内文（長押し／右クリック）の出し分けにのみ使う。実行環境で
+  // 決まりセッション中に変わらないため、初回レンダー時に一度だけ判定する
+  const [isMobile] = useState(() => isMobileDevice())
 
   // 「完成！」ボタンが押される前（プレビュー表示中）にフォント埋め込み用CSSの
   // 取得（数百リクエスト規模になりうる重い処理。詳細はexportImage.tsのコメント
@@ -130,17 +141,13 @@ export function CompleteFlow({
             alt="完成したオタク年表"
             className="w-full max-w-md rounded-lg border border-[#E5E0EE] shadow-sm"
           />
-          <p className="font-kaku text-center text-sm text-[#6B6375]">
-            スマホの方は画像長押し
-            <br />
-            PCの方は画像右クリック
-            <br />
-            で保存してね
+          <p className="font-kaku text-center text-sm font-bold text-[#6B6375]">
+            {isMobile ? '▲画像を長押しして保存▲' : '▲画像を右クリックで保存▲'}
           </p>
 
           <div className="mt-4 flex flex-col items-center gap-1">
             <p className="font-maru text-sm font-bold text-[#262230]">
-              完成した年表をシェアしよう！
+              完成した年表をXでシェアしよう！
             </p>
             <p className="text-xs text-[#8D869B]">
               （保存した画像を添付してポストしてね）
@@ -160,11 +167,11 @@ export function CompleteFlow({
           <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 px-6">
             <div className="w-full max-w-xs rounded-2xl bg-white p-5 text-center shadow-lg">
               <p className="font-maru text-base font-bold text-[#262230]">
-                画像の保存はされていますか？
+                画像の保存はしましたか？
               </p>
               <ul className="mt-3 space-y-1 text-left text-sm text-[#6B6375]">
                 <li>①画像を保存しよう</li>
-                <li>②SNSボタンを押してシェア</li>
+                <li>② 「Xポストする」ボタンを押してシェア</li>
               </ul>
               <div className="mt-5 flex items-center justify-center gap-3">
                 <button
