@@ -180,9 +180,28 @@ function App() {
               にしておく必要がある（sectionの高さを内容に合わせて縮めて
               しまうと、sticky先が入力欄と同じ高さ分だけ「動ける余地」を
               失い、追従しなくなるため）。スマホでは1カラム表示のため
-              位置固定は不要（lg:のみ有効）
+              位置固定は不要（lg:のみ有効）。
+
+              年表自体が長くなり、プレビュー（見出し＋チャート＋完成
+              ボタン等）の高さが画面の縦幅を超えると、sticky要素は
+              画面内に収まらない分をそのまま画面外にはみ出させるだけで
+              スクロールする手段を持たないため、「完成」ボタンや年表の
+              下の方の項目が画面内に入らず見えなくなる（ブラウザを縮小
+              しないと出てこない）という指摘があった。対処として、この
+              divの高さを画面の縦幅基準で頭打ちにし（lg:max-h-[...]）、
+              収まりきらない分はこのdiv自身の中でスクロールできるように
+              した（lg:overflow-y-auto）。プレビューの高さが画面に収まる
+              間は今まで通り何も変わらず、収まらない場合だけこのdiv内に
+              スクロールバーが現れる。
+
+              OSやブラウザによってはスクロール可能な領域でも既定では
+              スクロールバーが常時表示されず（ホバー時のみ等）、内容が
+              途中で切れているだけなのかスクロールできるのか一見わかり
+              にくいため、スクロールバー自体を細く・薄い色で常時見える
+              スタイルに指定している（Firefox向けscrollbar-width、
+              Chrome/Safari向け::-webkit-scrollbar系の両方をカバー）
             */}
-            <div className="lg:sticky lg:top-4">
+            <div className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#D8D2E4] [&::-webkit-scrollbar-track]:bg-transparent">
               <PreviewPanel
                 years={years}
                 displayName={displayName}
