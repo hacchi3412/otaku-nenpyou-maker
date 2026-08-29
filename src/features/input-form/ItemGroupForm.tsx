@@ -73,6 +73,13 @@ function formStateFromGroup(group: ItemGroup): FormState {
  * `lg:sticky lg:top-0`を指定することで、下の登録済み項目一覧
  * （`ItemGroupList`）がその領域内でスクロールしてもフォームだけは常に
  * 領域の上端に留まるようにしている（詳細はAppのコメント・7章参照）。
+ *
+ * 終了年は、新規登録時（editingGroupがnull）に限り、終了年自体をまだ
+ * 一度も直接触っていない間は開始年に自動で追従する（1年だけの項目が
+ * 一番多いはずなので、開始年を選ぶだけで登録できるようにするため。詳細は
+ * 7章参照）。一度でも終了年を直接変更したら、それ以降は開始年を変えても
+ * 終了年は追従しない（複数年の範囲を意図的に設定したとみなす）。編集時は
+ * 既存の範囲を意図的なものとして扱い、この自動追従を最初から無効にする。
  */
 export function ItemGroupForm({
   years,
@@ -94,11 +101,29 @@ export function ItemGroupForm({
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  // 終了年を直接触ったかどうか（上記コメント参照）。編集時は既存の範囲を
+  // 意図的なものとして扱うため、最初から「触った」扱いにしておく
+  const [endYearTouched, setEndYearTouched] = useState(
+    () => editingGroup !== null,
+  )
 
   const updateForm = (patch: Partial<FormState>) => {
     setForm((prev) => ({ ...prev, ...patch }))
     setError(null)
     setMessage(null)
+  }
+
+  const handleStartYearChange = (value: number) => {
+    updateForm({
+      startYear: value,
+      // 終了年をまだ直接触っていなければ、開始年にそのまま追従させる
+      ...(endYearTouched ? {} : { endYear: value }),
+    })
+  }
+
+  const handleEndYearChange = (value: number) => {
+    setEndYearTouched(true)
+    updateForm({ endYear: value })
   }
 
   const handleSubmit = () => {
@@ -132,6 +157,7 @@ export function ItemGroupForm({
     } else {
       setMessage(`「${title}」を登録しました`)
       setForm(blankFormState(latestYear))
+      setEndYearTouched(false)
     }
   }
 
@@ -170,7 +196,7 @@ export function ItemGroupForm({
       <div className="mt-2 flex items-center gap-2">
         <select
           value={form.startYear}
-          onChange={(e) => updateForm({ startYear: Number(e.target.value) })}
+          onChange={(e) => handleStartYearChange(Number(e.target.value))}
           aria-label="開始年"
           className="min-w-0 flex-1 rounded-lg border border-[#E5E0EE] bg-white px-1.5 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
         >
@@ -183,7 +209,7 @@ export function ItemGroupForm({
         <span className="text-xs text-[#8D869B]">〜</span>
         <select
           value={form.endYear}
-          onChange={(e) => updateForm({ endYear: Number(e.target.value) })}
+          onChange={(e) => handleEndYearChange(Number(e.target.value))}
           aria-label="終了年"
           className="min-w-0 flex-1 rounded-lg border border-[#E5E0EE] bg-white px-1.5 py-2 text-sm text-[#262230] outline-none focus:border-[#BFB4D6]"
         >
@@ -196,7 +222,7 @@ export function ItemGroupForm({
       </div>
       <div className="mt-1 flex items-center justify-between gap-2">
         <p className="text-[10px] text-[#B9B2C7]">
-          複数年続いた場合は開始年〜終了年を選んでください（1年だけなら同じ年でOK）
+          終了年は開始年に自動で合わせます。複数年続いた場合だけ終了年を変えてください
         </p>
         {/*
           「もっと過去の年を追加する」は、以前は登録済み項目一覧の一番下に
