@@ -257,7 +257,14 @@ export function ItemGroupForm({
       </div>
 
       <div className="mt-2">
-        <p className="mb-1 text-xs text-[#8D869B]">カラー</p>
+        {/*
+          「カラー」だけだと何のための操作か伝わりにくいという指摘を受け、
+          ジャンルなどで自分なりに色分けする使い方ができることを一言添えた
+          （詳細は7章参照）
+        */}
+        <p className="mb-1 text-xs text-[#8D869B]">
+          カラー（ジャンルなどで自由に色分けできます）
+        </p>
         <div className="flex gap-1.5">
           {SWATCH_COLORS.map((swatch) => (
             <button
