@@ -21,6 +21,7 @@ interface ItemGroupFormProps {
   onSave: (input: ItemGroupInput) => SaveItemGroupResult
   onDelete: (groupId: string) => void
   onCancelEdit: () => void
+  onAddPastYears: () => void
 }
 
 interface FormState {
@@ -66,6 +67,12 @@ function formStateFromGroup(group: ItemGroup): FormState {
  * `key={editingGroupId ?? 'new'}`を渡してこのコンポーネントごと再マウント
  * させる方式を採る（Reactの定石。setStateをuseEffect内から呼ぶ実装だと
  * 余分な再レンダーが挟まる上、oxlintの`set-state-in-effect`にも抵触する）。
+ *
+ * PC幅では、このフォームの親（`InputFormPanel`の外側、`App`側）が
+ * sticky＋overflow-y-autoのスクロール領域になっており、フォーム自身にも
+ * `lg:sticky lg:top-0`を指定することで、下の登録済み項目一覧
+ * （`ItemGroupList`）がその領域内でスクロールしてもフォームだけは常に
+ * 領域の上端に留まるようにしている（詳細はAppのコメント・7章参照）。
  */
 export function ItemGroupForm({
   years,
@@ -73,6 +80,7 @@ export function ItemGroupForm({
   onSave,
   onDelete,
   onCancelEdit,
+  onAddPastYears,
 }: ItemGroupFormProps) {
   // 年選択プルダウンの並び（新しい年が上）は他の年選択UIと揃えている
   const sortedYears = [...years].reverse()
@@ -133,7 +141,7 @@ export function ItemGroupForm({
   }
 
   return (
-    <div className="rounded-2xl border border-[#F0ECF5] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#F0ECF5] bg-white p-4 shadow-sm lg:sticky lg:top-0 lg:z-10">
       <span className="inline-flex items-center rounded-full bg-[#F3D9FA] px-2.5 py-1 text-xs font-bold text-[#862E9C]">
         {editingGroup ? '✏️ 項目を編集' : '⚡ 項目登録'}
       </span>
@@ -186,9 +194,27 @@ export function ItemGroupForm({
           ))}
         </select>
       </div>
-      <p className="mt-1 text-[10px] text-[#B9B2C7]">
-        複数年続いた場合は開始年〜終了年を選んでください（1年だけなら同じ年でOK）
-      </p>
+      <div className="mt-1 flex items-center justify-between gap-2">
+        <p className="text-[10px] text-[#B9B2C7]">
+          複数年続いた場合は開始年〜終了年を選んでください（1年だけなら同じ年でOK）
+        </p>
+        {/*
+          「もっと過去の年を追加する」は、以前は登録済み項目一覧の一番下に
+          常設していたが、一覧が伸びるほど手が届きにくくなり違和感がある
+          という指摘を受けた。この操作の目的は「開始年・終了年の選択肢を
+          増やすこと」そのものなので、その選択肢を出している場所（このすぐ
+          上の年プルダウン）の直下に置くのが最も自然だと判断し、ここへ移した
+          （詳細は7章参照）。フォーム自体もsticky化したため、一覧がどれだけ
+          伸びても常に手の届く位置に留まる
+        */}
+        <button
+          type="button"
+          onClick={onAddPastYears}
+          className="shrink-0 text-[10px] whitespace-nowrap text-[#8D869B] underline underline-offset-2 transition hover:text-[#262230]"
+        >
+          ＋もっと過去の年を追加する
+        </button>
+      </div>
 
       <div className="mt-2.5">
         <textarea

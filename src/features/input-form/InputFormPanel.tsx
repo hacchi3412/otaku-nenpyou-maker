@@ -28,6 +28,12 @@ interface InputFormPanelProps {
  * 理由：プレビュー上のブロックをタップした時にも同じ状態を切り替える必要が
  * あり、その際はモバイルタブの切り替えと同期的に行う必要があるため。詳細は
  * Appのコメント参照）。
+ *
+ * 「＋もっと過去の年を追加する」はかつてこのコンポーネントの一番下に
+ * 常設していたが、`ItemGroupForm`の年プルダウンのすぐ下（この操作の
+ * 目的そのものに近い場所）へ移したため、ここでは`ItemGroupForm`へ
+ * そのまま受け渡すだけになっている（詳細はItemGroupFormのコメント・
+ * 7章参照）。
  */
 export function InputFormPanel({
   years,
@@ -56,19 +62,13 @@ export function InputFormPanel({
         onSave={onSaveItemGroup}
         onDelete={handleDelete}
         onCancelEdit={() => onEditingGroupIdChange(null)}
+        onAddPastYears={onAddPastYears}
       />
       <ItemGroupList
         groups={groups}
         editingGroupId={editingGroupId}
         onEdit={onEditingGroupIdChange}
       />
-      <button
-        type="button"
-        onClick={onAddPastYears}
-        className="rounded-full border border-dashed border-[#D8D2E4] px-4 py-2 text-sm text-[#8D869B] transition hover:border-[#BFB4D6] hover:text-[#262230]"
-      >
-        ＋もっと過去の年を追加する
-      </button>
     </div>
   )
 }

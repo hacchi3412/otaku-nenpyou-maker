@@ -15,6 +15,15 @@ import { useTimelineData } from './hooks/useTimelineData'
 type MobileTab = 'input' | 'preview'
 type TutorialStep = 1 | 2
 
+/**
+ * 入力フォーム・プレビューの両パネルで共通のsticky指定。
+ * PC幅（lg:）でスクロールに追従させつつ、パネル自身の高さが画面の縦幅を
+ * 超えた場合はパネル内でスクロールできるようにする（詳細は下記JSXの
+ * コメント・7章参照）
+ */
+const STICKY_PANEL_CLASSNAME =
+  'lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#D8D2E4] [&::-webkit-scrollbar-track]:bg-transparent'
+
 function App() {
   const { years, saveItemGroup, removeItemGroup, addPastYears, resetAll } =
     useTimelineData()
@@ -164,14 +173,24 @@ function App() {
             ref={inputSectionRef}
             className={mobileTab === 'input' ? 'block' : 'hidden lg:block'}
           >
-            <InputFormPanel
-              years={years}
-              editingGroupId={editingGroupId}
-              onEditingGroupIdChange={setEditingGroupId}
-              onSaveItemGroup={saveItemGroup}
-              onDeleteItemGroup={removeItemGroup}
-              onAddPastYears={addPastYears}
-            />
+            {/*
+              入力フォームも、プレビューと同じ理由・同じ仕組みでPC幅（lg:）
+              のみスクロールに追従するsticky指定にしている（詳細は下記
+              プレビュー側のコメント・7章参照）。登録済み項目の一覧
+              （`ItemGroupList`）が増えて全体の高さが画面の縦幅を超えても、
+              登録フォーム自体は常に画面内に留まり、一覧側だけがこのdiv内で
+              スクロールする。
+            */}
+            <div className={STICKY_PANEL_CLASSNAME}>
+              <InputFormPanel
+                years={years}
+                editingGroupId={editingGroupId}
+                onEditingGroupIdChange={setEditingGroupId}
+                onSaveItemGroup={saveItemGroup}
+                onDeleteItemGroup={removeItemGroup}
+                onAddPastYears={addPastYears}
+              />
+            </div>
           </section>
           <section
             ref={previewSectionRef}
@@ -205,9 +224,10 @@ function App() {
               途中で切れているだけなのかスクロールできるのか一見わかり
               にくいため、スクロールバー自体を細く・薄い色で常時見える
               スタイルに指定している（Firefox向けscrollbar-width、
-              Chrome/Safari向け::-webkit-scrollbar系の両方をカバー）
+              Chrome/Safari向け::-webkit-scrollbar系の両方をカバー）。
+              入力フォーム側（上記）も同じクラスをそのまま流用している
             */}
-            <div className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#D8D2E4] [&::-webkit-scrollbar-track]:bg-transparent">
+            <div className={STICKY_PANEL_CLASSNAME}>
               <PreviewPanel
                 years={years}
                 displayName={displayName}
