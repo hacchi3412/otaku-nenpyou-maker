@@ -20,11 +20,11 @@ interface PreviewPanelProps {
   displayName: string
   onDisplayNameChange: (value: string) => void
   /**
-   * プレビュー上のブロックをタップした項目のIDを渡して呼ばれる。
+   * プレビュー上のブロックをタップした項目のgroupIdを渡して呼ばれる。
    * 「プレビューで気づいて直したいのに、入力フォームへ戻るのが面倒」という
    * 声を受けたジャンプ機能用（詳細は7章参照）。
    */
-  onEditItem: (itemId: string) => void
+  onEditItem: (groupId: string) => void
 }
 
 /**

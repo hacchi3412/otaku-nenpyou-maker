@@ -1,123 +1,67 @@
-import { MAX_ITEMS_PER_YEAR } from '../../constants/timeline'
-import type { TimelineItem, YearEntry } from '../../types/timeline'
-import { pickRandomColor } from '../../utils/color'
-import { findForwardContinuousYears } from '../../utils/itemSync'
-import { QuickAddCard } from './QuickAddCard'
-import { YearCard } from './YearCard'
+import type { YearEntry } from '../../types/timeline'
+import {
+  listItemGroups,
+  type ItemGroupInput,
+  type SaveItemGroupResult,
+} from '../../utils/itemGroups'
+import { ItemGroupForm } from './ItemGroupForm'
+import { ItemGroupList } from './ItemGroupList'
 
 interface InputFormPanelProps {
   years: YearEntry[]
-  onChangeYearItems: (year: number, items: TimelineItem[]) => void
-  /**
-   * 「前方まとめ編集」の実行（詳細は7章参照）。対象年一覧・変更前後の
-   * タイトルを渡すと、その年群の中でoldTitleに一致する項目をnewTitleへ
-   * 一括で書き換える（コメント・カラーには影響しない）。
-   */
-  onRenameItemsForward: (
-    targetYears: number[],
-    oldTitle: string,
-    newTitle: string,
-  ) => void
+  /** 現在編集中の項目のgroupId。nullなら新規登録モード（Appが保持。詳細は下記参照） */
+  editingGroupId: string | null
+  onEditingGroupIdChange: (groupId: string | null) => void
+  onSaveItemGroup: (input: ItemGroupInput) => SaveItemGroupResult
+  onDeleteItemGroup: (groupId: string) => void
   onAddPastYears: () => void
 }
 
 /**
- * 年ごとの入力カード一覧（新しい年が上）。
- * 一番上にはクイック入力欄（QuickAddCard）を常設し、年カードを順に埋める
- * 通常のフローとは別に、思い出した順で「何に・いつハマったか」だけを
- * 素早く書き留められるようにしている（詳細は7章参照）。
+ * 入力フォーム全体。
+ * 登録・編集フォーム（`ItemGroupForm`）を常設し、その下に登録済みの項目一覧
+ * （`ItemGroupList`）を並べる。年ごとにカードを埋めていく方式から、
+ * 「タイトル・開始年〜終了年・コメント・カラーをまとめて1件ずつ登録する」
+ * 方式に変更した（詳細は7章参照）。
+ *
+ * editingGroupIdはAppが保持する（`InputFormPanel`単体ではなく`App`で持つ
+ * 理由：プレビュー上のブロックをタップした時にも同じ状態を切り替える必要が
+ * あり、その際はモバイルタブの切り替えと同期的に行う必要があるため。詳細は
+ * Appのコメント参照）。
  */
 export function InputFormPanel({
   years,
-  onChangeYearItems,
-  onRenameItemsForward,
+  editingGroupId,
+  onEditingGroupIdChange,
+  onSaveItemGroup,
+  onDeleteItemGroup,
   onAddPastYears,
 }: InputFormPanelProps) {
-  // クイック入力からの追加。新規項目の色・コメントの引き継ぎ判定（同じ
-  // タイトルが他の年に既にあれば自動で揃える）はuseTimelineData側の
-  // updateYearItemsが担うため、ここでは素の新規項目を積むだけでよい。
-  const handleQuickAdd = (year: number, title: string): string | null => {
-    const entry = years.find((y) => y.year === year)
-    if (!entry || entry.items.length >= MAX_ITEMS_PER_YEAR) return null
+  const groups = listItemGroups(years)
+  const editingGroup = groups.find((g) => g.groupId === editingGroupId) ?? null
 
-    const newItem: TimelineItem = {
-      id: crypto.randomUUID(),
-      title,
-      comment: '',
-      color: pickRandomColor(),
-    }
-    onChangeYearItems(year, [...entry.items, newItem])
-    return newItem.id
+  const handleDelete = (groupId: string) => {
+    onDeleteItemGroup(groupId)
+    onEditingGroupIdChange(null)
   }
-
-  // 「年を移動」：間違えた年に入力してしまった項目を、消して打ち直すことなく
-  // 別の年へ動かせるようにする（詳細は7章参照）。移動元からの削除・移動先への
-  // 追加はどちらもonChangeYearItemsを通すため、同名項目のコメント・カラー
-  // 自動同期（3.6）もそのまま適用される。
-  const handleMoveItem = (
-    fromYear: number,
-    item: TimelineItem,
-    toYear: number,
-  ): boolean => {
-    const fromEntry = years.find((y) => y.year === fromYear)
-    const toEntry = years.find((y) => y.year === toYear)
-    if (!fromEntry || !toEntry) return false
-    if (toEntry.items.length >= MAX_ITEMS_PER_YEAR) return false
-
-    onChangeYearItems(
-      fromYear,
-      fromEntry.items.filter((i) => i.id !== item.id),
-    )
-    onChangeYearItems(toYear, [...toEntry.items, item])
-    return true
-  }
-
-  // 「前方まとめ編集」：タイトル編集直後に、変更前のタイトルがfromYearより
-  // 後ろに連続していないか確認する（詳細は7章参照）。年群を求める部分は
-  // itemSync.tsに切り出し、実行（renameItemsForward）はコメント・カラーの
-  // 自動同期を避けるため、updateYearItemsとは別経路にしている
-  const handleCheckForwardRename = (
-    fromYear: number,
-    title: string,
-  ): number[] => findForwardContinuousYears(years, fromYear, title)
-
-  const handleRenameForward = (
-    fromYear: number,
-    oldTitle: string,
-    newTitle: string,
-  ): void => {
-    onRenameItemsForward(
-      findForwardContinuousYears(years, fromYear, oldTitle),
-      oldTitle,
-      newTitle,
-    )
-  }
-
-  const allYears = years.map((y) => y.year)
 
   return (
     <div className="flex flex-col gap-3">
-      <QuickAddCard years={years} onAdd={handleQuickAdd} />
-      {[...years].reverse().map((entry) => {
-        // 上から新しい年順・下から古い年順のどちらで埋めても引き継ぎ候補が出るよう、
-        // 前年（1つ下のカード）・翌年（1つ上のカード）の両方を参照する
-        const previousYear = years.find((y) => y.year === entry.year - 1)
-        const nextYear = years.find((y) => y.year === entry.year + 1)
-        return (
-          <YearCard
-            key={entry.year}
-            year={entry.year}
-            items={entry.items}
-            previousYearItems={previousYear?.items ?? []}
-            nextYearItems={nextYear?.items ?? []}
-            allYears={allYears}
-            onChange={(items) => onChangeYearItems(entry.year, items)}
-            onMoveItem={handleMoveItem}
-            onCheckForwardRename={handleCheckForwardRename}
-            onRenameForward={handleRenameForward}
-          />
-        )
-      })}
+      <ItemGroupForm
+        // 編集対象が切り替わるたびに再マウントし、フォームの内容を作り直す
+        // （ItemGroupFormのコメント参照）
+        key={editingGroupId ?? 'new'}
+        years={years}
+        editingGroup={editingGroup}
+        onSave={onSaveItemGroup}
+        onDelete={handleDelete}
+        onCancelEdit={() => onEditingGroupIdChange(null)}
+      />
+      <ItemGroupList
+        groups={groups}
+        editingGroupId={editingGroupId}
+        onEdit={onEditingGroupIdChange}
+      />
       <button
         type="button"
         onClick={onAddPastYears}
