@@ -16,13 +16,18 @@ type MobileTab = 'input' | 'preview'
 type TutorialStep = 1 | 2
 
 function App() {
-  const { years, updateYearItems, renameItemsForward, addPastYears, resetAll } =
+  const { years, saveItemGroup, removeItemGroup, addPastYears, resetAll } =
     useTimelineData()
   const [displayName, setDisplayName] = useLocalStorage(
     DISPLAY_NAME_STORAGE_KEY,
     '',
   )
   const [mobileTab, setMobileTab] = useState<MobileTab>('input')
+  // 入力フォーム（ItemGroupForm）が現在編集中の項目。nullなら新規登録モード。
+  // InputFormPanel単体ではなくAppで持つ理由：プレビュー上のブロックをタップ
+  // した時にも、モバイルタブの切り替えと同期的に（同じflushSync内で）この
+  // 状態を切り替える必要があるため（詳細は下記handleEditItemFromPreview参照）
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null)
 
   // 初回訪問時のスポットライト・チュートリアル。
   // ユーザーテストで「開いた瞬間何をしていいかわからない」という声があったため導入。
@@ -35,7 +40,7 @@ function App() {
   const inputSectionRef = useRef<HTMLElement>(null)
   const previewSectionRef = useRef<HTMLElement>(null)
 
-  // プレビュー上のブロックをタップした項目のコメント欄へジャンプする機能。
+  // プレビュー上のブロックをタップした項目の登録フォームへジャンプする機能。
   // 「プレビューを見て直したい箇所に気づいても、入力フォームへ戻って該当欄を
   // 探すのが面倒」という声を受けたもの（詳細は7章参照）。
   // モバイルではタブ切り替え直後は対象要素がhidden（display:none）のため、
@@ -45,10 +50,10 @@ function App() {
   // （次のティック）になってしまい、iOS Safariなどでは「ユーザー操作に
   // 直接紐づかない.focus()」とみなされてキーボードが開かない＝実際には
   // フォーカスが当たらないことがある、との指摘を受けた。
-  // そこでflushSyncを使い、タブ切り替えの状態更新を同期的にDOMへ反映させて
-  // から、同じクリックハンドラ内（＝同じユーザー操作の呼び出しスタック内）で
-  // 続けてfocus()を呼ぶようにした。これによりタップ操作と地続きの
-  // フォーカスとして扱われるようになる。
+  // そこでflushSyncを使い、タブ切り替え＋編集対象の切り替えを同期的にDOMへ
+  // 反映させてから、同じクリックハンドラ内（＝同じユーザー操作の呼び出し
+  // スタック内）で続けてfocus()を呼ぶようにした。これによりタップ操作と
+  // 地続きのフォーカスとして扱われるようになる。
   //
   // さらに、focus()直後のscrollIntoView()は「仮想キーボードが出る前」の
   // レイアウト（layout viewport）を基準に位置を計算してしまう。iOS Safari
@@ -61,13 +66,12 @@ function App() {
   // 自前で計算し、そのズレの分だけwindow.scrollByで補正する。resizeが
   // 発火しない環境（PC等、仮想キーボードが出ない場合）のフォールバックとして
   // タイムアウトも設定し、どちらか早い方で一度だけ補正する。
-  const handleEditItemFromPreview = (itemId: string) => {
+  const handleEditItemFromPreview = (groupId: string) => {
     flushSync(() => {
       setMobileTab('input')
+      setEditingGroupId(groupId)
     })
-    const target = document.querySelector<HTMLElement>(
-      `[data-comment-for="${itemId}"]`,
-    )
+    const target = document.querySelector<HTMLElement>('[data-item-form-title]')
     target?.focus({ preventScroll: true })
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 
@@ -162,8 +166,10 @@ function App() {
           >
             <InputFormPanel
               years={years}
-              onChangeYearItems={updateYearItems}
-              onRenameItemsForward={renameItemsForward}
+              editingGroupId={editingGroupId}
+              onEditingGroupIdChange={setEditingGroupId}
+              onSaveItemGroup={saveItemGroup}
+              onDeleteItemGroup={removeItemGroup}
               onAddPastYears={addPastYears}
             />
           </section>

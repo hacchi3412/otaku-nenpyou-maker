@@ -4,14 +4,16 @@ import {
   ADD_PAST_YEARS_STEP,
   DEFAULT_YEAR_COUNT,
   LOCAL_STORAGE_KEY,
-  MAX_ITEMS_PER_YEAR,
 } from '../constants/timeline'
-import type { TimelineData, TimelineItem } from '../types/timeline'
+import type { TimelineData } from '../types/timeline'
 import {
-  findExistingColorForTitle,
-  findExistingCommentForTitle,
-  propagateItemsByTitle,
-} from '../utils/itemSync'
+  deleteItemGroup,
+  migrateLegacyItemsToGroups,
+  upsertItemGroup,
+  validateGroupRange,
+  type ItemGroupInput,
+  type SaveItemGroupResult,
+} from '../utils/itemGroups'
 import { createInitialYears, prependPastYears } from '../utils/years'
 
 function createInitialData(): TimelineData {
@@ -28,91 +30,47 @@ export function useTimelineData() {
   const [data, setData] = useLocalStorage<TimelineData>(
     LOCAL_STORAGE_KEY,
     createInitialData(),
-  )
-
-  const updateYearItems = useCallback(
-    (year: number, items: TimelineItem[]) => {
-      setData((prev) => {
-        const trimmedItems = items.slice(0, MAX_ITEMS_PER_YEAR)
-        const prevItemIds = new Set(
-          (prev.years.find((entry) => entry.year === year)?.items ?? []).map(
-            (item) => item.id,
-          ),
-        )
-
-        // 新規追加された項目（前後の年から引き継ぐ場合を含む）は、
-        // すでに他の年で使われている同じジャンル名のコメント・カラーがあれば引き継ぐ。
-        // コメントは自由記述なので空の場合のみ、カラーはジャンルの識別子的な
-        // 位置づけなので見つかれば常に引き継ぐ（新規項目にはこの時点で
-        // ランダムな色が入っているだけなので、既存ジャンルの色で上書きする）
-        const itemsWithInheritedFields = trimmedItems.map((item) => {
-          const isNewItem = !prevItemIds.has(item.id)
-          if (!isNewItem) return item
-
-          const inheritedComment =
-            item.comment === ''
-              ? findExistingCommentForTitle(prev.years, item.title)
-              : undefined
-          const inheritedColor = findExistingColorForTitle(
-            prev.years,
-            item.title,
-          )
-
-          if (inheritedComment === undefined && inheritedColor === undefined) {
-            return item
-          }
-          return {
-            ...item,
-            ...(inheritedComment !== undefined
-              ? { comment: inheritedComment }
-              : {}),
-            ...(inheritedColor !== undefined ? { color: inheritedColor } : {}),
-          }
-        })
-
-        const updatedYears = prev.years.map((entry) =>
-          entry.year === year
-            ? { ...entry, items: itemsWithInheritedFields }
-            : entry,
-        )
-
-        // 同じジャンル名を持つ項目のコメント・カラーを、今回更新した年の内容に
-        // 揃えて他の年にも伝播する（どの年で編集しても全年に反映されるようにする）
-        return {
-          ...prev,
-          years: propagateItemsByTitle(updatedYears, itemsWithInheritedFields),
-        }
-      })
-    },
-    [setData],
+    (value) => ({
+      ...value,
+      years: migrateLegacyItemsToGroups(value.years),
+    }),
   )
 
   /**
-   * 「前方まとめ編集」の実行。指定した年群（findForwardContinuousYearsで
-   * 求めた、連続している前提の年一覧）の中で、oldTitleに完全一致する項目の
-   * タイトルだけをnewTitleへ一括で書き換える。
+   * 1件の項目登録（グループ）を保存する。範囲内のどこかの年が上限（3件）を
+   * 超える場合は何も書き込まず、conflictYearsを添えて失敗を返す
+   * （全部reject。部分的な登録はしない。詳細は7章参照）。
    *
-   * updateYearItemsとは違い、propagateItemsByTitleによるコメント・カラーの
-   * 自動同期は行わない。まとめて変更したいのはタイトルだけであり、対象年
-   * ごとに書いた個別のコメントまで（どれか1年の内容に）揃ってしまうのは
-   * このまとめ編集が意図しない副作用になるため（詳細は7章参照）。
+   * 上限チェックは直前にレンダーされた（＝直前の確定状態である）data.years
+   * に対して行う。この画面は1回のフォーム送信ごとに検証→保存の1往復で
+   * 完結する設計であり、既存の年移動などの上限チェックと同じ前提
+   * （連続でsetDataを呼び分けない限りレンダー済みの状態は最新である）に
+   * 立っている。
    */
-  const renameItemsForward = useCallback(
-    (targetYears: number[], oldTitle: string, newTitle: string) => {
-      if (targetYears.length === 0) return
-      const targetYearSet = new Set(targetYears)
+  const saveItemGroup = useCallback(
+    (input: ItemGroupInput): SaveItemGroupResult => {
+      const validation = validateGroupRange(
+        data.years,
+        input.startYear,
+        input.endYear,
+        input.groupId ?? undefined,
+      )
+      if (!validation.ok) return validation
+
       setData((prev) => ({
         ...prev,
-        years: prev.years.map((entry) =>
-          targetYearSet.has(entry.year)
-            ? {
-                ...entry,
-                items: entry.items.map((item) =>
-                  item.title === oldTitle ? { ...item, title: newTitle } : item,
-                ),
-              }
-            : entry,
-        ),
+        years: upsertItemGroup(prev.years, input),
+      }))
+      return { ok: true }
+    },
+    [data.years, setData],
+  )
+
+  const removeItemGroup = useCallback(
+    (groupId: string) => {
+      setData((prev) => ({
+        ...prev,
+        years: deleteItemGroup(prev.years, groupId),
       }))
     },
     [setData],
@@ -132,8 +90,8 @@ export function useTimelineData() {
 
   return {
     years: data.years,
-    updateYearItems,
-    renameItemsForward,
+    saveItemGroup,
+    removeItemGroup,
     addPastYears,
     resetAll,
   }

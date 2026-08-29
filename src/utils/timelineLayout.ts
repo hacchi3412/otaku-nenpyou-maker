@@ -30,8 +30,10 @@ export function getVisibleYears(years: YearEntry[]): YearEntry[] {
 
 /**
  * 各年の項目を最大3レーンに割り当てる。
- * 年をまたいでジャンル名が完全一致する項目は同じレーンに配置し、
- * 1つの連続したセグメントとして扱う（線でつながって見えるように）。
+ * 年をまたいで同じグループ（1回の登録操作、`item.groupId`が一致）の項目は
+ * 同じレーンに配置し、1つの連続したセグメントとして扱う（線でつながって
+ * 見えるように）。かつてはタイトル文字列の完全一致で判定していたが、
+ * 登録・編集の単位を明確にするためgroupId方式に変更した（詳細は7章参照）。
  *
  * 年ごとの項目数は3以下（入力フォーム側で担保）であることを前提とする。
  */
@@ -44,13 +46,13 @@ export function computeLaneSegments(visibleYears: YearEntry[]): LaneSegment[] {
     const matchedLanes = new Set<number>()
     const newItems: TimelineItem[] = []
 
-    // 1. 前年から続く項目（タイトル完全一致）を同じレーンに割り当て、区間を延長する
+    // 1. 前年から続く項目（同じgroupId）を同じレーンに割り当て、区間を延長する
     for (const item of entry.items) {
       const laneIndex = active.findIndex(
         (segment, lane) =>
           segment !== null &&
           !matchedLanes.has(lane) &&
-          segment.item.title === item.title,
+          segment.item.groupId === item.groupId,
       )
       if (laneIndex === -1) {
         newItems.push(item)

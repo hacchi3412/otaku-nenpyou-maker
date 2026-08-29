@@ -15,12 +15,13 @@ interface TimelineChartProps {
   /** 実際に使われているレーン数（getUsedLaneCountの戻り値）。グリッドの列数に使う */
   laneCount: number
   /**
-   * ブロックをタップ／クリックしたときに、その項目のIDを渡して呼ばれる。
-   * 「プレビューで気づいて直したいのに、入力フォームへ戻るのが面倒」という
-   * 声を受け、タップした項目の入力欄（コメント欄）へジャンプする用途を想定
-   * している（詳細は7章参照）。渡さなければブロックはただの表示のまま。
+   * ブロックをタップ／クリックしたときに、その項目が属するグループのID
+   * （`TimelineItem.groupId`）を渡して呼ばれる。「プレビューで気づいて
+   * 直したいのに、入力フォームへ戻るのが面倒」という声を受け、タップした
+   * 項目の登録フォームを編集モードで開く用途を想定している（詳細は7章参照）。
+   * 渡さなければブロックはただの表示のまま。
    */
-  onItemClick?: (itemId: string) => void
+  onItemClick?: (groupId: string) => void
 }
 
 /**
@@ -115,11 +116,11 @@ export function TimelineChart({
                 role: 'button',
                 tabIndex: 0,
                 'aria-label': `${segment.item.title}を編集`,
-                onClick: () => onItemClick(segment.item.id),
+                onClick: () => onItemClick(segment.item.groupId),
                 onKeyDown: (e: KeyboardEvent) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
-                    onItemClick(segment.item.id)
+                    onItemClick(segment.item.groupId)
                   }
                 },
               }
